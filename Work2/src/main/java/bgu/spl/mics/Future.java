@@ -80,14 +80,18 @@ public class Future<T> {
      *         elapsed, return null.
      */
 	public T get(long timeout, TimeUnit unit) {
-		if(isDone == true){
-			return my_result;
-		}
-		else{
-			//Thread.sleep(timeout);
-			if(isDone == true){
-				return my_result;
-			}
+//		if(isDone == true){
+//			return my_result;
+//		}
+//		else{
+//			//Thread.sleep(timeout);
+//			if(isDone == true){
+//				return my_result;
+//			}
+//		}
+//		return null;
+		if (my_result==null){
+
 		}
 		return null;
 	}

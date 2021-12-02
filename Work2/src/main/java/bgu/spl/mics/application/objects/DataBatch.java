@@ -6,5 +6,15 @@ package bgu.spl.mics.application.objects;
  */
 
 public class DataBatch {
-    
+
+    private Boolean processed;
+    public DataBatch(){
+        processed = false;
+    }
+    public void doneProcessed(){
+        processed = true;
+    }
+    public boolean isProcessed(){
+        return processed;
+    }
 }

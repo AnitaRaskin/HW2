@@ -22,7 +22,7 @@ public class CPU {
         this.cores = cores;
         data = new LinkedList<DataBatch>(); //we will take the data from the cluster
         cluster = Cluster.getInstance();
-        time= null;//??????
+        time= new Timer();//??????
     }
 
     //before- receive data
@@ -31,17 +31,23 @@ public class CPU {
     }
 
     //middle- process data
-    public void processData(Data d){
-        if(d.getType() == Data.Type.Images){//Images
-            processingTime=(32/cores)*4;
-        }
-        else if(d.getType() == Data.Type.Text){//Text
-            processingTime=(32/cores)*2;
-        }
-        else{//Tabular
-            processingTime=(32/cores)*1;
-        }
-        sentData();
+
+    /**
+     * @pre: data != null
+     * @post:
+     */
+    public void processData(){
+//        long processingTime;
+//        if(d.getType() == Data.Type.Images){//Images
+//            processingTime=(32/cores)*4;
+//        }
+//        else if(d.getType() == Data.Type.Text){//Text
+//            processingTime=(32/cores)*2;
+//        }
+//        else{//Tabular
+//            processingTime=(32/cores)*1;
+//        }
+//        sentData();
     }
 
 
@@ -53,6 +59,12 @@ public class CPU {
 
     public void updateTime(){
 
+    }
+    public Timer getTime(){
+        return time;
+    }
+    public LinkedList<DataBatch> getData(){
+        return data;
     }
 
 }
