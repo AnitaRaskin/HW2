@@ -15,6 +15,6 @@ public class GPU {
 
     private Type type;
     private Cluster cluster;
-    private Queue ;
+    private Queue workQ ;
 
 }
