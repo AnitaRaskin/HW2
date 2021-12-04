@@ -14,6 +14,9 @@ public interface MessageBus {
     /**
      * Subscribes {@code m} to receive {@link Event}s of type {@code type}.
      * <p>
+     * @pre: none
+     * @inv:
+     * @post:
      * @param <T>  The type of the result expected by the completed event.
      * @param type The type to subscribe to,
      * @param m    The subscribing micro-service.
@@ -33,18 +36,30 @@ public interface MessageBus {
      * result was {@code result}.
      * When this method is called, the message-bus will resolve the {@link Future}
      * object associated with {@link Event} {@code e}.
+     *
+     * Explanation: send notify to the future of this message+resolve it with the result
+     *
      * <p>
      * @param <T>    The type of the result expected by the completed event.
      * @param e      The completed event.
      * @param result The resolved result of the completed event.
+     * @pre: result != null , result.instanceOf() == T
+     * @inv:
+     * @post: none
      */
     <T> void complete(Event<T> e, T result);
 
     /**
      * Adds the {@link Broadcast} {@code b} to the message queues of all the
      * micro-services subscribed to {@code b.getClass()}.
+     *
+     * Explanation: all micro-services subscribed to b.type Broadcast we need to find them and give them the b as a message
+     *
      * <p>
      * @param b 	The message to added to the queues.
+     * @pre: none
+     * @post:
+     *
      */
     void sendBroadcast(Broadcast b);
 
@@ -52,6 +67,10 @@ public interface MessageBus {
      * Adds the {@link Event} {@code e} to the message queue of one of the
      * micro-services subscribed to {@code e.getClass()} in a round-robin
      * fashion. This method should be non-blocking.
+     *
+     * Explanation: all micro-services subscribed to e.getClass and the messages are added in round-robin
+     * return Future object-> to this he can return the result if there is no suitable MS return null
+     *
      * <p>
      * @param <T>    	The type of the result expected by the event and its corresponding future object.
      * @param e     	The event to add to the queue.
