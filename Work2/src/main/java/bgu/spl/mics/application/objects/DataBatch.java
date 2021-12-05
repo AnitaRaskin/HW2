@@ -8,8 +8,13 @@ package bgu.spl.mics.application.objects;
 public class DataBatch {
 
     private Boolean processed;
+    Data.Type type;
     public DataBatch(){
         processed = false;
+    }
+    public DataBatch(Data.Type type){
+        processed = false;
+        this.type = type;
     }
     public void doneProcessed(){
         processed = true;

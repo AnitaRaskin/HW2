@@ -22,17 +22,15 @@ public class Future<T> {
 		my_result=null;
 		isDone = false;
 	}
-	
+
 	/**
-     * retrieves the result the Future object holds if it has been resolved.
-     * This is a blocking method! It waits for the computation in case it has
-     * not been completed.
-     * <p>
-	 * @pre:None
-	 * @post:None
-     * @return return the result of type T if it is available, if not wait until it is available.
-     * 	       
-     */
+	 * retrieves the result the Future object holds if it has been resolved. This is a blocking method!
+	 * It waits for the computation in case it has not been completed.
+	 *
+	 * @pre: None
+	 * @post: my_result = result;
+	 * @return return the result of type T if it is available, if not wait until it is available.
+	 */
 	public T get() {
 		while (!isDone){
 			try{
@@ -65,20 +63,19 @@ public class Future<T> {
 	public boolean isDone() {
 		return isDone;
 	}
-	
+
 	/**
-     * retrieves the result the Future object holds if it has been resolved,
-     * This method is non-blocking, it has a limited amount of time determined
-     * by {@code timeout}
-     * <p>
-     * @param timeout 	the maximal amount of time units to wait for the result.
-     * @param unit		the {@link TimeUnit} time units to wait.
-	 * @pre: timeout > 0
+	 * retrieves the result the Future object holds if it has been resolved, This method is non-blocking,
+	 * it has a limited amount of time determined by {@code timeout}
+	 * <p>
+	 * @param timeout 	the maximal amount of time units to wait for the result.
+	 * @param unit		the {@link TimeUnit} time units to wait.
+	 *
+	 * @pre: timeout >= 0
 	 * @post: None
-     * @return return the result of type T if it is available, if not, 
-     * 	       wait for {@code timeout} TimeUnits {@code unit}. If time has
-     *         elapsed, return null.
-     */
+	 * @return return the result of type T if it is available, if not, wait for {@code timeout}
+	 * 	       TimeUnits {@code unit}. If time has elapsed, return null.
+	 */
 	public T get(long timeout, TimeUnit unit) {
 //		if(isDone == true){
 //			return my_result;

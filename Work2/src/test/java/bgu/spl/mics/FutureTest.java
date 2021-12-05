@@ -56,7 +56,7 @@ class FutureTest {
         assertThrows("time should be more then 0", Exception.class, ()->future.get(0, TimeUnit.MINUTES));
 
         //check when update in the middle of the run
-        Thread t1 = new Thread(()->assertEquals("This is a test", future.get(10,TimeUnit.SECONDS)));
+        Thread t1 = new Thread(()->assertEquals("This is a test", future.get(2,TimeUnit.SECONDS)));
         Thread t2 = new Thread(()->future.resolve("This is a test"));
         t1.start();
         t2.start();

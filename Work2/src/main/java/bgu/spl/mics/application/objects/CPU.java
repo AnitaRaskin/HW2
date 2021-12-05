@@ -16,25 +16,29 @@ public class CPU {
     private int cores;
     private LinkedList<DataBatch> data; //Collection
     private Cluster cluster;
-    private Timer time;
+    private int tick;
 
     public CPU(int cores){ //constructor
         this.cores = cores;
         data = new LinkedList<DataBatch>(); //we will take the data from the cluster
         cluster = Cluster.getInstance();
-        time= new Timer();//??????
+        tick= 0;//??????
     }
 
-    //before- receive data
+    /**
+     * before- Cluster send data to the CPU
+     * @pre: None
+     * @post: None
+     */
     public void receiveData(){
         //data.addLast(cluster.getData());
     }
 
-    //middle- process data
-
     /**
-     * @pre: data != null
-     * @post:
+     * middle- need to process the data use CPUS
+     * @pre: data.size() > 0
+     * @post: size() = data
+     *        @post size() = @pre size() -1
      */
     public void processData(){
 //        long processingTime;
@@ -50,21 +54,40 @@ public class CPU {
 //        sentData();
     }
 
-
-    //after- return data
-    public void sentData (){
-        //delete the unprocessed data
-        //put in that place the processed data
-    }
-
+    /**
+     * update the tick
+     * @pre: tick >=0
+     * @post: @post tick = @pre tick +1
+     */
     public void updateTime(){
 
     }
-    public Timer getTime(){
-        return time;
+
+    /**
+     * return tick
+     * @pre: None
+     * @post: None
+     */
+    public int getTime(){
+        return tick;
     }
+
+    /**
+     * return the LinkedList data
+     * @pre: None
+     * @post: None
+     */
     public LinkedList<DataBatch> getData(){
         return data;
+    }
+
+    /**
+     * return number of cores
+     * @pre: None
+     * @post: None
+     */
+    public int getCoresNum(){
+        return cores;
     }
 
 }
