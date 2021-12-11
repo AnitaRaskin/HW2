@@ -15,7 +15,17 @@ public class Data {
     private Type type;
     private int processed;
     private int size;
-
+    private Data(Type type, int size){
+        this.type = type;
+        this.size = size;
+        processed = 0;
+    }
+    public void addProcessed(){
+        processed++;
+    }
+    public boolean dataProcessed(){
+        return (processed==size);
+    }
     public Type getType() {
         return type;
     }
