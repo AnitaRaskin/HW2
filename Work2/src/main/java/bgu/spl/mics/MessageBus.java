@@ -1,13 +1,10 @@
 package bgu.spl.mics;
 
 /**
- * The message-bus is a shared object used for communication between
- * micro-services.
+ * The message-bus is a shared object used for communication between microservices.
  * It should be implemented as a thread-safe singleton.
- * The message-bus implementation must be thread-safe as
- * it is shared between all the micro-services in the system.
- * You must not alter any of the given methods of this interface. 
- * You cannot add methods to this interface.
+ * The message-bus implementation must be thread-safe as it is shared between all the microservices in the system.
+ * You must not alter any of the given methods of this interface.  You cannot add methods to this interface.
  */
 public interface MessageBus {
 

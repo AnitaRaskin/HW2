@@ -8,5 +8,32 @@ package bgu.spl.mics;
  * the {@link MessageBus}) must implement it.
  */
 public interface Message {
+    //Fields
+    Future future = null;
+
+
+    public static <T> void setResolve(T result) {
+
+    }
+}
+
+class TrainModelEvent implements Message {
 
 }
+
+class TestModelEvent implements Message {
+
+}
+
+class PublishResultsEvent implements Message {
+
+}
+
+class PublishConferenceBroadcast implements Message {
+
+}
+
+class TickBroadcast implements Message {
+
+}
+
