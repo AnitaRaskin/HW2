@@ -21,6 +21,7 @@ public class GPU {
     private Queue<DataBatch> VRAM;//store processed data, have space limitation
     private int memoryLimitation;
     private int ticks;
+    private int runTime=0;
 
     public GPU(Type the_type, Model m){
         type = the_type;
@@ -131,7 +132,7 @@ public class GPU {
      * @post: @post memoryLimitation = @pre memoryLimitation + processed.memory
      */
     public void addProcessedData(DataBatch dataBatch){
-
+        VRAM.add(dataBatch);
     }
 
     /**
