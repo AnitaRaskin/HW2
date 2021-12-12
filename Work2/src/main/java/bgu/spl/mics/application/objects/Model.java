@@ -16,6 +16,7 @@ public class Model {
     private Status status;
     private Result result;
 
-
-
+    public Data getData() {
+        return data;
+    }
 }

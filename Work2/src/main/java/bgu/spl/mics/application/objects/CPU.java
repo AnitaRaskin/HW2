@@ -18,6 +18,7 @@ public class CPU {
     private Queue<DataBatch> data; //Collection
     private Cluster cluster;
     private int tick;
+    private int runTime=0;
 
     public CPU(int cores){ //constructor
         this.cores = cores;
@@ -46,8 +47,12 @@ public class CPU {
             DataBatch corrent = data.peek();
             if (tick == processingTime(corrent.getType())) {
                 cluster.sentData(data.remove());
+                runTime += tick;
                 tick = 0;
             }
+        }
+        else {
+            tick=0;
         }
     }
 
@@ -104,4 +109,7 @@ public class CPU {
         return cores;
     }
 
+    public int getRunTime() {
+        return runTime;
+    }
 }

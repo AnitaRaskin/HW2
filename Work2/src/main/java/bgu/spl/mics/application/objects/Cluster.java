@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.objects;
 
 
+import java.util.LinkedList;
 import java.util.Queue;
 
 /**
@@ -12,7 +13,12 @@ import java.util.Queue;
  */
 public class Cluster {
 	//field
-	private Queue<DataBatch> dataFromGPU;
+	private static Cluster thisCluster = null;
+	private static Queue<CPU> CPUS;
+	private static Queue<GPU> GPUS;
+	private static Queue<DataBatch> dataFromGPU;//why Anita??
+	private static Object lockCPU = new Object();
+
 
 
 	/**
@@ -20,10 +26,21 @@ public class Cluster {
      */
 	public static Cluster getInstance() {
 		//TODO: Implement this
-		return null;
+		if(thisCluster == null){
+			thisCluster = new Cluster();
+		}
+		return thisCluster;
 	}
-	public static void takeDataToProc(DataBatch dataB){
+	private Cluster (){
+		GPUS = new LinkedList<GPU>();
+		CPUS = new LinkedList<CPU>();
+	}
+	public void takeDataToProc(DataBatch dataBatch){
+		CPU currentCPU = CPUS.remove();
+		currentCPU.processData();
 
 	}
+	public void sentData(DataBatch dataBatch){
 
+	}
 }
