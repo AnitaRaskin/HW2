@@ -45,7 +45,7 @@ class GPUTest {
         Model model = new Model();
         gpu.splitDataToBatches();
         assertEquals(1000,gpu.getDisk().size());
-        gpu.sendDataToProc();
+        gpu.sendDataToPro();
         assertEquals(999,gpu.getDisk().size());
     }
 

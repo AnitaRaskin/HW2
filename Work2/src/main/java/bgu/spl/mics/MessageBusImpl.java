@@ -107,7 +107,7 @@ public class MessageBusImpl implements MessageBus {
 	 * if microservice.containsKey(m) == false then no need to do anything
 	 */
 	@Override
-	public void unregister(MicroService m) {
+	public void unregister(MicroService m) { //synchronised
 		if(microservice.containsKey(m)){ //registered
 			//???????????????????????????????????????
 			//remove from all the hash maps
@@ -118,7 +118,6 @@ public class MessageBusImpl implements MessageBus {
 			//broadcast
 			broadcasts.values().remove(m);
 		}
-
 	}
 
 	@Override

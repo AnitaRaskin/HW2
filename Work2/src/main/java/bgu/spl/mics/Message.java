@@ -9,7 +9,7 @@ package bgu.spl.mics;
  */
 public interface Message {
     //Fields
-    Future future = null;
+    private Future<T> future;
 
 
     public static <T> void setResolve(T result) {

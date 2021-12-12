@@ -1,6 +1,8 @@
 package bgu.spl.mics.application.objects;
 
 
+import java.util.Queue;
+
 /**
  * Passive object representing the cluster.
  * <p>
@@ -9,6 +11,8 @@ package bgu.spl.mics.application.objects;
  * Add fields and methods to this class as you see fit (including public methods and constructors).
  */
 public class Cluster {
+	//field
+	private Queue<DataBatch> dataFromGPU;
 
 
 	/**
@@ -17,6 +21,9 @@ public class Cluster {
 	public static Cluster getInstance() {
 		//TODO: Implement this
 		return null;
+	}
+	public static void takeDataToProc(DataBatch dataB){
+
 	}
 
 }
