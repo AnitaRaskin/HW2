@@ -36,11 +36,14 @@ public class Cluster {
 		CPUS = new LinkedList<CPU>();
 	}
 	public void takeDataToProc(DataBatch dataBatch){
-		CPU currentCPU = CPUS.remove();
-		currentCPU.processData();
-
+		synchronized (lockCPU) {
+			CPU currentCPU = CPUS.remove();
+			currentCPU.processData();
+			CPUS.add(currentCPU);
+		}
 	}
-	public void sentData(DataBatch dataBatch){
+	public void sendData(DataBatch dataBatch){
+
 
 	}
 }

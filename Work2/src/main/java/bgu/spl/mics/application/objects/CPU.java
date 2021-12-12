@@ -44,9 +44,9 @@ public class CPU {
      */
     public void processData(){
         if(data!=null) {
-            DataBatch corrent = data.peek();
-            if (tick == processingTime(corrent.getType())) {
-                cluster.sentData(data.remove());
+            DataBatch current = data.peek();
+            if (tick == processingTime(current.getType())) {
+                cluster.sendData(data.remove());
                 runTime += tick;
                 tick = 0;
             }
