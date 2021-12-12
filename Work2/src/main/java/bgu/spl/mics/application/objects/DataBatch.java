@@ -14,13 +14,18 @@ public class DataBatch {
     public DataBatch(){
         processed = false;
     }
+    //this constructor is not correct
     public DataBatch(Data.Type type){
         this.type = type;
         processed = false;
     }
-    public DataBatch(Data data){
+    public Data.Type getType(){
+        return data.getType();
+    }
+    public DataBatch(Data data, int start_index){
         processed = false;
         this.data = data;
+        this.start_index = start_index;
     }
     public void doneProcessed(){
         processed = true;
