@@ -96,7 +96,7 @@ public class GPU {
      *      *        @post size() = @pre size() - 1
      */
     public void sendDataToPro(){
-        if(memoryLimitation > 1000){
+        if(memoryLimitation > 1000){//still got memory to send
             DataBatch db = Disk.remove();
             memoryLimitation = memoryLimitation - 1000;
             cluster.takeDataToProc(db);
@@ -115,7 +115,7 @@ public class GPU {
     }
     /**
      *
-     * this function send processed databatch to the gpuService to be trained
+     * this function send processed data batch to the gpuService to be trained
      * @pre: VRAM != null
      * @post: size() = VRAM
      *        @post size() = @pre size() - 1

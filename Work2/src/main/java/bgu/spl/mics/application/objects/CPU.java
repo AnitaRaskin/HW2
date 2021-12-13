@@ -28,6 +28,7 @@ public class CPU {
     }
 
     /**
+     *
      * before- Cluster send data to the CPU
      * @pre: None
      * @post: None
@@ -37,6 +38,7 @@ public class CPU {
     }
 
     /**
+     *
      * middle- need to process the data use CPUS
      * @pre: data.size() > 0
      * @post: size() = data
@@ -57,6 +59,7 @@ public class CPU {
     }
 
     /**
+     *
      * this function calculate the time need to process this dataBatch
      * @param type
      * @return
@@ -72,7 +75,9 @@ public class CPU {
             return (32/cores)*1;
         }
     }
+
     /**
+     *
      * update the tick
      * @pre: tick >=0
      * @post: @post tick = @pre tick +1
@@ -82,7 +87,9 @@ public class CPU {
         processData();
     }
 
+    //getter
     /**
+     *
      * return tick
      * @pre: None
      * @post: None
@@ -90,8 +97,8 @@ public class CPU {
     public int getTime(){
         return tick;
     }
-
     /**
+     *
      * return the LinkedList data
      * @pre: None
      * @post: None
@@ -99,8 +106,8 @@ public class CPU {
     public Queue<DataBatch> getData(){
         return data;
     }
-
     /**
+     *
      * return number of cores
      * @pre: None
      * @post: None
@@ -108,7 +115,6 @@ public class CPU {
     public int getCoresNum(){
         return cores;
     }
-
     public int getRunTime() {
         return runTime;
     }
