@@ -17,10 +17,10 @@ public class Student {
     private Degree status;
     private int publications;
     private int papersRead;
-    public Student(String name, String department, Degree status){
+    public Student(String name, String department, String status){
         this.name = name;
         this.department = department;
-        this.status = status;
+        this.status = Degree.valueOf(status);
         publications = 0;
         papersRead = 0;
     }
