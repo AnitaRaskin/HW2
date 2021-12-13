@@ -2,6 +2,7 @@ package bgu.spl.mics.application.objects;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.*;
 
 /**
  * Passive object representing a single GPU.
@@ -23,16 +24,16 @@ public class GPU {
     private int ticks;
     private int runTime=0;
 
-    public GPU(Type type, Model model){
-        this.type = type;
+    public GPU(String type, Model model){
+        this.type = Type.valueOf(type);
         cluster = Cluster.getInstance();
         this.model = model;
         Disk = new LinkedList<DataBatch>();
         VRAM = new LinkedList<DataBatch>();
-        if(type == Type.RTX3090){
+        if(this.type == Type.RTX3090){
             memoryLimitation = 32;
         }
-        else if(type == Type.RTX2080){
+        else if(this.type == Type.RTX2080){
             memoryLimitation = 16;
         }
         else{
@@ -109,18 +110,50 @@ public class GPU {
      * @post: size() = VRAM
      *        @post size() = @pre size() - 1
      */
-    public void trainBatch(){
-        Student.Degree a = Student.Degree.MSc;
+    private void trainBatch(){
+        if(VRAM != null){
+            if(ticks == neededTicks()){
+                model.getData().addProcessed();
+            }
+        }
+        else
+            ticks = 0;
+    }
+
+    /**
+     * this function calculate the ticks that us needed to train dataBatch
+     * @return the amount of ticks that are needed
+     */
+    private int neededTicks(){
+        if(type == Type.RTX3090)
+            return 1;
+        else if(type == Type.RTX2080)
+            return 2;
+        else
+            return 3;
     }
     /**
-     *
      * this function send processed data batch to the gpuService to be trained
      * @pre: VRAM != null
      * @post: size() = VRAM
      *        @post size() = @pre size() - 1
      */
     public void testBatch(){
-
+        Student student = model.getStudent();
+        if(student.getStatus() == Student.Degree.MSc){
+            int random = (int)(Math.random()*10);
+            if(random <= 0.6)
+                model.updateResult(true);
+            else
+                model.updateResult(false);
+        }
+        else{
+            int random = (int)(Math.random()*10);
+            if(random <= 0.8)
+                model.updateResult(true);
+            else
+                model.updateResult(false);
+        }
     }
 
     /**
@@ -150,6 +183,7 @@ public class GPU {
      */
     public void doTick(){
         ticks++;
+        trainBatch();
     }
 
     /**

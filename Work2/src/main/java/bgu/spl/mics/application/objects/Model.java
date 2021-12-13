@@ -24,9 +24,23 @@ public class Model {
         result = Result.None;
     }
     public void updateStatus(){
-        if(status==)
+        if(status==Status.PreTrained)
+            status = Status.Training;
+        else if(status==Status.Training)
+            status = Status.Trained;
+        else
+            status = Status.Tested;
+    }
+    public void updateResult(boolean resultB){
+        if(resultB)
+            result = Result.Good;
+        else
+            result = Result.Bad;
     }
     public Data getData() {
         return data;
+    }
+    public Student getStudent(){
+        return student;
     }
 }

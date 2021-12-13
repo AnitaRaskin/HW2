@@ -2,6 +2,8 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
 
+import java.util.Timer;
+
 /**
  * TimeService is the global system timer There is only one instance of this micro-service.
  * It keeps track of the amount of ticks passed since initialization and notifies
@@ -13,14 +15,37 @@ import bgu.spl.mics.MicroService;
  */
 public class TimeService extends MicroService{
 
-	public TimeService() {
-		super("Change_This_Name");
-		// TODO Implement this
+	// current timer
+	// end
+	private int speed;
+	private int duration;
+	private int currentTime = 0;
+	//need to check if TimeService is a singleton
+	private TimeService(int speed, int duration) {
+		super("timeService");
+		this.speed = speed;
+		this.duration = duration;
 	}
 
+	//tick()
+	private void broadcastTick(){
+		currentTime++;
+		//send broadcast of the updated time
+	}
+
+	/**
+	 * this function need to terminate all the event that are still running at the program
+	 */
+	private void terminateAll(){
+
+	}
 	@Override
 	protected void initialize() {
-		// TODO Implement this
+		// Timer
+		//TimerTask(tick())
+		//timer.(timertask)
+
+		//Timer
 	}
 
 }
