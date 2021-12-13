@@ -24,18 +24,18 @@ public class CRMSRunner {
         JsonObject object= JsonParser.parseReader(reader).getAsJsonObject();
 
         //start taking all the info from gson
-        JsonArray Student = object.getAsJsonArray("Students");
-        Student[] students = createStudents(Student);
-        ArrayList<Model> models = createModels(Student);
+        JsonArray Jstudents = object.getAsJsonArray("Students");
+        Student[] students = createStudents(Jstudents);
+        ArrayList<Model> models = createModels(students,Jstudents);
 
-        JsonArray Gpus = object.getAsJsonArray("GPUS");
-        GPU[] GPUS = createGPUs(Gpus);
+        JsonArray JGpus = object.getAsJsonArray("GPUS");
+        GPU[] GPUS = createGPUs(JGpus);
 
-        JsonArray Cpus = object.getAsJsonArray("CPUS");
-        CPU[] CPUS = createCPUs(Cpus);
+        JsonArray JCpus = object.getAsJsonArray("CPUS");
+        CPU[] CPUS = createCPUs(JCpus);
 
-        JsonArray Conferences = object.getAsJsonArray("Conferences");
-        CPU[] conferences = createconferences(Conferences);
+        JsonArray JConferences = object.getAsJsonArray("Conferences");
+        CPU[] conferences = createconferences(JConferences);
 
         int TickTime = object.get("TickTime").getAsInt();
         int Duration = object.get("Duration").getAsInt();
@@ -53,16 +53,16 @@ public class CRMSRunner {
         return Students;
     }
 
-    public static ArrayList <Model> createModels(JsonArray students){
+    public static ArrayList <Model> createModels(Student[] students, JsonArray Jstudents){
         ArrayList<Model> models = new ArrayList<Model>();
-        int size = students.size();
+        int size = Jstudents.size();
         for(int i = 0; i < size; i++){//students
-            JsonObject student = students.get(i).getAsJsonObject();
+            JsonObject student = Jstudents.get(i).getAsJsonObject();
             JsonArray model = student.getAsJsonArray("models"); //array of models
             for(int j = 0; j<model.size() ; j++){ //run over all the models
                 JsonObject mod = model.get(j).getAsJsonObject();
                 Data data = new Data(mod.get("type").getAsString(), mod.get("size").getAsInt());
-                models.set(i, new Model(mod.get("name").getAsString(), data, student.get("name").getAsString()));
+                models.set(i, new Model(mod.get("name").getAsString(), data, students[i]));
             }
         }
         return models;
@@ -72,13 +72,21 @@ public class CRMSRunner {
         int size = gpus.size();
         GPU[] GPUS = new GPU[size];
         for(int i = 0; i<size ; i++){
-            GPUS[i] = new GPU();
+            GPUS[i] = new GPU(gpus.get(i).getAsString(), null);
         }
         return GPUS;
     }
-    public static CPU[] createCPUs(JsonArray cpus){
 
+    public static CPU[] createCPUs(JsonArray cpus){
+        int size = cpus.size();
+        CPU[] CPUS = new CPU[size];
+        for(int i = 0; i<size ; i++){
+            CPUS[i] = new CPU(cpus.get(i).getAsInt());
+        }
+        return CPUS;
     }
+
+
     public static CPU[] createconferences(JsonArray conferences){
 
     }
