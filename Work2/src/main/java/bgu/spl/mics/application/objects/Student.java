@@ -24,11 +24,21 @@ public class Student {
         publications = 0;
         papersRead = 0;
     }
+
     public void addPublications(){
         publications++;
     }
+
     public void addPaperRead(){
         papersRead++;
+    }
+
+    public int getPublications() {
+        return publications;
+    }
+
+    public int getPapersRead() {
+        return papersRead;
     }
 
     public Degree getStatus() {

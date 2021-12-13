@@ -11,14 +11,19 @@ class GPUTest {
 
     @BeforeEach
     void setUp() {
-        gpu = new GPU(GPU.Type.RTX3090);
-        gpu_mid = new GPU(GPU.Type.RTX2080);
-        gpu_slow = new GPU(GPU.Type.GTX1080);
+        Student student = new Student("Checker","Uni", Student.Degree.MSc);
+        Data data = new Data(Data.Type.Images,1000);
+        Model model = new Model("test",data,student);
+        gpu = new GPU(GPU.Type.RTX3090,model);
+        gpu_mid = new GPU(GPU.Type.RTX2080,model);
+        gpu_slow = new GPU(GPU.Type.GTX1080,model);
     }
 
     @Test
     void updateModel() {
-        Model model = new Model();
+        Student student = new Student("Checker","Uni", Student.Degree.MSc);
+        Data data = new Data(Data.Type.Images,1000);
+        Model model = new Model("test",data,student);
         assertNotNull(gpu.getModel(), "Excepted the model to be null");
         gpu.updateModel(model);
         assertNotEquals(model,gpu.getModel());
@@ -26,7 +31,9 @@ class GPUTest {
 
     @Test
     void splitDataToBatches() {
-        Model model = new Model();
+        Student student = new Student("Checker","Uni", Student.Degree.MSc);
+        Data data = new Data(Data.Type.Images,1000);
+        Model model = new Model("test",data,student);
         assertEquals(0,gpu.getDisk().size());
         gpu.splitDataToBatches();
         assertEquals(1000,gpu.getDisk().size());
@@ -42,7 +49,9 @@ class GPUTest {
 
     @Test
     void sendDataToProc() {
-        Model model = new Model();
+        Student student = new Student("Checker","Uni", Student.Degree.MSc);
+        Data data = new Data(Data.Type.Images,1000);
+        Model model = new Model("test",data,student);
         gpu.splitDataToBatches();
         assertEquals(1000,gpu.getDisk().size());
         gpu.sendDataToPro();

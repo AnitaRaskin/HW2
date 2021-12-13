@@ -44,11 +44,12 @@ public class CPU {
      * @post: size() = data
      *        @post size() = @pre size() -1
      */
-    public void processData(){
+    private void processData(){
         if(data!=null) {
             DataBatch current = data.peek();
             if (tick == processingTime(current.getType())) {
-                cluster.sendData(data.remove());
+                cluster.sendProcessedData(data.remove());
+                cluster.addCPU(this);
                 runTime += tick;
                 tick = 0;
             }

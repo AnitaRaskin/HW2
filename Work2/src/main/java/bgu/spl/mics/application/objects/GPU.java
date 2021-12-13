@@ -23,16 +23,16 @@ public class GPU {
     private int ticks;
     private int runTime=0;
 
-    public GPU(Type the_type, Model m){
-        type = the_type;
+    public GPU(Type type, Model model){
+        this.type = type;
         cluster = Cluster.getInstance();
-        model = m; //????
+        this.model = model;
         Disk = new LinkedList<DataBatch>();
         VRAM = new LinkedList<DataBatch>();
-        if(the_type == Type.RTX3090){
+        if(type == Type.RTX3090){
             memoryLimitation = 32;
         }
-        else if(the_type == Type.RTX2080){
+        else if(type == Type.RTX2080){
             memoryLimitation = 16;
         }
         else{
@@ -42,7 +42,6 @@ public class GPU {
     }
 
     /**
-     *
      * this function update the model that the gpu id working on
      * @pre: None
      * @post: model = new_model
@@ -62,9 +61,9 @@ public class GPU {
     }
 
     /**
-     *
-     * this function get the data that in the model and then split it to 1000 samples of dataBatches
-     * help function
+     * this function get the data that in the model and then split it to samples with the size 1000 to dataBatches
+     * and store them in the disk
+     * for example data with the size of 10,000 will split to 10 dataBatches
      * @pre: data.size() > 0
      * @post: None
      */
@@ -78,7 +77,6 @@ public class GPU {
     }
 
     /**
-     *
      * return Disk.Queue
      * @pre: None
      * @post: None
@@ -88,19 +86,20 @@ public class GPU {
     }
 
     /**
-     *
      * this function send to the cluster dataBatch to be processed by the CPUS
-     * help function- used from Cluster
+     * will send only if it have the memory in the
      * @pre: Disk.size() > 0
      * @post: size() = Disk
      *      *        @post size() = @pre size() - 1
      */
-    public void sendDataToPro(){
-        if(memoryLimitation > 1000){//still got memory to send
+    public boolean sendDataToPro(){
+        if(memoryLimitation > 0){//able to train dataBatch
             DataBatch db = Disk.remove();
-            memoryLimitation = memoryLimitation - 1000;
+            memoryLimitation--;
             cluster.takeDataToProc(db);
+            return true;
         }
+        return false;
     }
 
     /**
@@ -111,7 +110,7 @@ public class GPU {
      *        @post size() = @pre size() - 1
      */
     public void trainBatch(){
-
+        Student.Degree a = Student.Degree.MSc;
     }
     /**
      *

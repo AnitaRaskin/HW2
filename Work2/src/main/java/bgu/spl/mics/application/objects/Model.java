@@ -16,6 +16,16 @@ public class Model {
     private Status status;
     private Result result;
 
+    public Model(String name, Data data, Student student){
+        this.name = name;
+        this.data = data;
+        this.student = student;
+        status = Status.PreTrained;
+        result = Result.None;
+    }
+    public void updateStatus(){
+        if(status==)
+    }
     public Data getData() {
         return data;
     }

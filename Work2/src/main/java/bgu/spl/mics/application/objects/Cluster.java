@@ -16,8 +16,10 @@ public class Cluster {
 	private static Cluster thisCluster = null;
 	private static Queue<CPU> CPUS;
 	private static Queue<GPU> GPUS;
-	private static Queue<DataBatch> dataFromGPU;//why Anita??
+	private static Queue<DataBatch> dataFromGPU;
 	private static Object lockCPU = new Object();
+	private static Object lockGPU = new Object();
+	private static Object lockReturnDG = new Object();
 
 
 
@@ -35,15 +37,54 @@ public class Cluster {
 		GPUS = new LinkedList<GPU>();
 		CPUS = new LinkedList<CPU>();
 	}
-	public void takeDataToProc(DataBatch dataBatch){
+	public void addCPU(CPU cpu){
 		synchronized (lockCPU) {
-			CPU currentCPU = CPUS.remove();
-			currentCPU.processData();
-			CPUS.add(currentCPU);
+			if (dataFromGPU != null) {
+				cpu.receiveData(dataFromGPU.poll());
+			}
+			else {
+				CPUS.add(cpu);
+			}
 		}
 	}
-	public void sendData(DataBatch dataBatch){
+	public void addGPU(GPU gpu){
+		GPUS.add(gpu);
+	}
 
+	/**
+	 * in this function the GPU give the cluster unprocessed data so the cpu can process it
+	 * the cluster give the dataBatch only for cpu that is not working if it doesn't have someone free
+	 * we save the dataBatch for the first cpu that going to be free
+	 * @param dataBatch = the dataBatch that we want to process
+	 */
+	public void takeDataToProc(DataBatch dataBatch){
+		synchronized (lockGPU) {
+			if (CPUS != null) {
+				CPU currentCPU = CPUS.remove();
+				currentCPU.receiveData(dataBatch);
+				//CPUS.add(currentCPU);
+			} else {
+				dataFromGPU.add(dataBatch);
+			}
+		}
+	}
 
+	/**
+	 * with function the cpu use after it finish to process data
+	 * and now we want to return this dataBatch to the GPU that the dataBatch send from;
+	 * @param dataBatch
+	 */
+	public void sendProcessedData(DataBatch dataBatch){
+		synchronized (lockReturnDG){
+			Data originOfData = dataBatch.getData();
+			boolean found = false;
+			for(int i=0; i<= GPUS.size() && !found; i++){
+				GPU currentGPU = GPUS.poll();
+				if(currentGPU.getModel().getData()==originOfData){
+					found = true;
+					currentGPU.addProcessedData(dataBatch);
+				}
+			}
+		}
 	}
 }

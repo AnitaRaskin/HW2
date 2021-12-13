@@ -9,34 +9,23 @@ public class DataBatch {
     //Fields
     private Data data;
     private int start_index;
-    private Boolean processed;
     Data.Type type;
 
     //this constructor is not correct
+    public DataBatch(){}
     public DataBatch(Data.Type type){
         this.type = type;
-        processed = false;
     }
-    //constructor
-    public DataBatch(){
-        processed = false;
-    }
-
-    public DataBatch(Data data, int start_index){
-        processed = false;
-        this.data = data;
-        this.start_index = start_index;
-    }
-
     public Data.Type getType(){
         return data.getType();
     }
 
-    public void doneProcessed(){
-        processed = true;
+    public DataBatch(Data data, int start_index){
+        this.data = data;
+        this.start_index = start_index;
     }
 
-    public boolean isProcessed(){
-        return processed;
+    public Data getData() {
+        return data;
     }
 }
