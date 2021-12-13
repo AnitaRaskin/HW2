@@ -1,5 +1,7 @@
 package bgu.spl.mics;
 
+import bgu.spl.mics.application.objects.Model;
+
 /**
  * A message is a data-object which is passed between micro-services as a means
  * of communication. The Message interface is a "Marker" interface which means
@@ -8,32 +10,5 @@ package bgu.spl.mics;
  * the {@link MessageBus}) must implement it.
  */
 public interface Message {
-    //Fields
-    private Future<T> future;
-
-
-    public static <T> void setResolve(T result) {
-
-    }
-}
-
-class TrainModelEvent implements Message {
 
 }
-
-class TestModelEvent implements Message {
-
-}
-
-class PublishResultsEvent implements Message {
-
-}
-
-class PublishConferenceBroadcast implements Message {
-
-}
-
-class TickBroadcast implements Message {
-
-}
-

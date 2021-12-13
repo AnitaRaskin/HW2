@@ -14,13 +14,14 @@ import java.util.Timer;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class TimeService extends MicroService{
-
 	// current timer
 	// end
+
+	//Fields
 	private int speed;
 	private int duration;
 	private int currentTime = 0;
-	//need to check if TimeService is a singleton
+	//need to check if TimeService is a singleton->yes
 	private TimeService(int speed, int duration) {
 		super("timeService");
 		this.speed = speed;

@@ -1,8 +1,7 @@
 package bgu.spl.mics;
-import java.util.Hashtable;
-import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
@@ -12,28 +11,37 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class MessageBusImpl implements MessageBus {
 	//Fields
-	private ConcurrentHashMap events = new ConcurrentHashMap(); // key = event type ; value = vector of MS
-	private ConcurrentHashMap broadcasts = new ConcurrentHashMap(); // key = broadcast type ; value = vector of MS
-	private ConcurrentHashMap microservice = new ConcurrentHashMap(); //key = m ; value = BlockingQueue of messages
-	private ConcurrentHashMap future = new ConcurrentHashMap();
+	private ConcurrentHashMap<Class<? extends Event>, ConcurrentLinkedQueue<MicroService>> events_MS;
+	private ConcurrentHashMap<Class<? extends Broadcast>, ConcurrentLinkedQueue<MicroService>> broadcasts_MS;
+	private ConcurrentHashMap<MicroService, BlockingQueue<Message>> microservice_queues;
+	private ConcurrentHashMap<Event, Future> future;
+	private static Object lockMBQ = new Object();
+
+	//Constructor
+	public MessageBusImpl(){ //check if this is a method
+		events_MS = new ConcurrentHashMap();
+		broadcasts_MS = new ConcurrentHashMap();
+		microservice_queues = new ConcurrentHashMap();
+		future = new ConcurrentHashMap();
+	}
 
 	/**
 	 *
 	 * @param type The type to subscribe to,
-	 * @param m    The subscribing micro-service.
+	 * @param m    The subscribing microservice.
 	 * add a microservice to the value(=vector of MS) of a type of Message(=key) in the hush
 	 * @pre: microservice.containsKey(m) == true ->m is registered
 	 *
 	 */
 	@Override
 	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-		BlockingQueue<MicroService> queueMS;
+		ConcurrentLinkedQueue<MicroService> queueMS;
 		Boolean found = false;
-		if(!events.containsKey(type)){
-			queueMS = new LinkedBlockingQueue<MicroService>();
+		if(!events_MS.containsKey(type)){
+			queueMS = new ConcurrentLinkedQueue<MicroService>();
 		}
 		else{ //type exists
-			queueMS = (LinkedBlockingQueue<MicroService>) events.get(type); //get()->return the value of this key
+			queueMS = (ConcurrentLinkedQueue<MicroService>) events_MS.get(type); //get()->return the value of this key
 			for(MicroService ms: queueMS){
 				if(ms == m){
 					found = true; //I do not want to enter m twice
@@ -42,28 +50,28 @@ public class MessageBusImpl implements MessageBus {
 		}
 		if(!found){
 			queueMS.add(m);
-			events.put(type,queueMS);//put() -> if type exists it will only change the value of the key
-			                     //         else create a new one and add the key and the value
+			events_MS.put(type,queueMS);//put() -> if type exists it will only change the value of the key
+			                            //         else create a new one and add the key and the value
 		}
 	}
 
 	/**
 	 *
 	 * @param type 	The type to subscribe to.
-	 * @param m    	The subscribing micro-service.
+	 * @param m    	The subscribing microservice.
 	 * add a microservice to the value(=vector of MS) of a type of Broadcast(=key) in the hush
 	 * @pre: microservice.containsKey(m) == true ->m is registered
 	 */
 	@Override
 	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-		if(microservice.containsKey(m)){ // m is registered
-			BlockingQueue<MicroService> queueMS;
+		if(microservice_queues.containsKey(m)){ // m is registered
+			ConcurrentLinkedQueue<MicroService> queueMS;
 			Boolean found = false;
-			if(!broadcasts.containsKey(type)){
-				queueMS = new LinkedBlockingQueue<MicroService>();
+			if(!broadcasts_MS.containsKey(type)){
+				queueMS = new ConcurrentLinkedQueue<MicroService>();
 			}
 			else{ //type exists
-				queueMS = (LinkedBlockingQueue<MicroService>) broadcasts.get(type); //get()->return the value of this key
+				queueMS = (ConcurrentLinkedQueue<MicroService>) broadcasts_MS.get(type); //get()->return the value of this key
 				for(MicroService ms: queueMS){
 					if(ms == m){
 						found = true; //I do not want to enter m twice
@@ -72,8 +80,8 @@ public class MessageBusImpl implements MessageBus {
 			}
 			if(!found){
 				queueMS.add(m);
-				broadcasts.put(type,queueMS); //put() -> if type exists it will only change the value of the key
-				                          //         else create a new one and add the key and the value
+				broadcasts_MS.put(type,queueMS); //put() -> if type exists it will only change the value of the key
+				                                 //         else create a new one and add the key and the value
 			}
 		}
 
@@ -81,26 +89,35 @@ public class MessageBusImpl implements MessageBus {
 
 	/**
 	 *
+	 * find the right future event of this e event and resolve it with function from Future
 	 * @param e      The completed event.
 	 * @param result The resolved result of the completed event.
 	 * call the function of Event that will call the function of Future resolve
 	 */
 	@Override
 	public <T> void complete(Event<T> e, T result) {
-		e.setResolve(result);
+		if(result != null){
+			if(future.containsKey(e)){ //if this event exists
+				Future<T> res = future.get(e);
+				res.resolve(result);
+				future.put(e,res);
+			}
+		}
 	}
 
 	/**
 	 *
+	 * creates a new MS->creats a new queue for him and add him into the hash of MS_queue
 	 * @param m the microservice to create a queue for.
 	 * @pre:  None
-	 * @post: microservice.containsKey(m) == true
+	 * @post: microservice_queue.containsKey(m) == true
 	 */
 	@Override
 	public void register(MicroService m) {
 		BlockingQueue<Message> mes = new LinkedBlockingQueue <Message>();
-		//Vector<Message> vec = new Vector<Message>();
-		microservice.put(m, mes); //key = m ; value = mes
+		synchronized(lockMBQ){
+			microservice_queues.put(m, mes); //key = m ; value = mes
+		}
 	}
 
 	/**
@@ -110,15 +127,15 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public void unregister(MicroService m) { //synchronised
-		if(microservice.containsKey(m)){ //registered
+		if(microservice_queues.containsKey(m)){ //registered
 			//???????????????????????????????????????
 			//remove from all the hash maps
 			//microservice
-			microservice.remove(m);
+			microservice_queues.remove(m);
 			//events
-			events.values().remove(m);
+			events_MS.values().remove(m);
 			//broadcast
-			broadcasts.values().remove(m);
+			broadcasts_MS.values().remove(m);
 		}
 	}
 
@@ -129,15 +146,16 @@ public class MessageBusImpl implements MessageBus {
 	}
 
 	/**
-	 * should return a Future object that is connected to him- add ti hash map
-	 * @param e     	The event to add to the queue.
 	 *
-	 * @param <T>
-	 * @return
+	 * a. create a future for this event + enter this to the future hash
+	 * b.
+	 * @param e     	The event to add to the queue.
+	 * @return Future<T> to the student
 	 */
 	@Override
 	public <T> Future<T> sendEvent(Event<T> e) {
-		// TODO Auto-generated method stub
+		Future<T> ev_future = new Future<T>();
+		future.put(e, ev_future);
 		return null;
 	}
 
