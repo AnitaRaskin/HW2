@@ -114,7 +114,10 @@ public class GPU {
         if(VRAM != null){
             if(ticks == neededTicks()){
                 model.getData().addProcessed();
+                VRAM.poll();
             }
+            memoryLimitation++;
+            sendDataToPro();
         }
         else
             ticks = 0;

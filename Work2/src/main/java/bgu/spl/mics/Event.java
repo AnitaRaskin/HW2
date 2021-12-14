@@ -9,10 +9,7 @@ package bgu.spl.mics;
  */
 public interface Event<T> extends Message {
     //Fields
-    private Future<T> resolve=null;
 
-    public default <T> void setResolve(T result) { //????
-        future.resolve(result);
-    }
+
 
 }

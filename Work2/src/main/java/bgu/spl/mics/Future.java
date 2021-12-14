@@ -77,20 +77,15 @@ public class Future<T> {
 	 * 	       TimeUnits {@code unit}. If time has elapsed, return null.
 	 */
 	public T get(long timeout, TimeUnit unit) {
-//		if(isDone == true){
-//			return my_result;
-//		}
-//		else{
-//			//Thread.sleep(timeout);
-//			if(isDone == true){
-//				return my_result;
-//			}
-//		}
-//		return null;
-		if (my_result==null){
-
+		if(my_result != null)
+			return my_result;
+		long millisTime = unit.toMillis(timeout);
+		try {
+			wait(millisTime);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-		return null;
+		return my_result;
 	}
 
 }
