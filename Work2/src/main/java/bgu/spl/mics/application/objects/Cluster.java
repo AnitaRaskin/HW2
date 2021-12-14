@@ -60,7 +60,7 @@ public class Cluster {
 	public void takeDataToProc(DataBatch dataBatch){
 		synchronized (lockGPU) {
 			if (CPUS != null) {
-				CPU currentCPU = CPUS.remove();
+				CPU currentCPU = bestCPU(CPUS,dataBatch);
 				currentCPU.receiveData(dataBatch);
 				//CPUS.add(currentCPU);
 			} else {
@@ -69,6 +69,47 @@ public class Cluster {
 		}
 	}
 
+	/**
+	 * this function search for the best CPU available to do the process
+	 * @param cpus
+	 * @param dataBatch
+	 * @return the best CPU
+	 */
+	private CPU bestCPU(Queue<CPU> cpus, DataBatch dataBatch){
+		CPU bestCPU = cpus.peek();
+		for (int i=0; i< cpus.size(); i++){
+			CPU temp = cpus.poll();
+			if(processingTime(bestCPU,dataBatch.getType()) > processingTime(temp, dataBatch.getType()))
+				bestCPU = temp;
+			cpus.add(temp);
+		}
+		boolean found = false;
+		for (int i=0; i< cpus.size() && !found; i++){
+			CPU current = cpus.poll();
+			if(current==bestCPU)
+				found=true;
+			else
+				cpus.add(current);
+		}
+		return bestCPU;
+	}
+	/**
+	 *
+	 * this function calculate the time need to process this dataBatch
+	 * @param type
+	 * @return
+	 */
+	private int processingTime(CPU cpu, Data.Type type){
+		if(type == Data.Type.Images){//Images
+			return (32/cpu.getCoresNum())*4;
+		}
+		else if(type == Data.Type.Text){//Text
+			return (32/cpu.getCoresNum())*2;
+		}
+		else{//Tabular
+			return (32/cpu.getCoresNum())*1;
+		}
+	}
 	/**
 	 * with function the cpu use after it finish to process data
 	 * and now we want to return this dataBatch to the GPU that the dataBatch send from;

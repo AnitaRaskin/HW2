@@ -20,10 +20,10 @@ public class Data {
         this.size = size;
         processed = 0;
     }
-    public void addProcessed(){
+    public void addTrainedData(){
         processed+=1000;
     }
-    public boolean dataProcessed(){
+    public boolean dataTrained(){
         return (processed==size);
     }
     public Type getType() {

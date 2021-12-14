@@ -49,9 +49,9 @@ public class CPU {
             DataBatch current = data.peek();
             if (tick == processingTime(current.getType())) {
                 cluster.sendProcessedData(data.remove());
-                cluster.addCPU(this);
                 runTime += tick;
                 tick = 0;
+                cluster.addCPU(this);
             }
         }
         else {

@@ -22,12 +22,11 @@ public class TimeService extends MicroService{
 	private int duration;
 	private int currentTime = 0;
 	//need to check if TimeService is a singleton->yes
-	private TimeService(int speed, int duration) {
+	public TimeService(int speed, int duration) {
 		super("timeService");
 		this.speed = speed;
 		this.duration = duration;
 	}
-
 	//tick()
 	private void broadcastTick(){
 		currentTime++;

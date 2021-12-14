@@ -9,7 +9,7 @@ public class DataBatch {
     //Fields
     private Data data;
     private int start_index;
-    Data.Type type;
+    private Data.Type type;
 
     //this constructor is not correct
     public DataBatch(){}

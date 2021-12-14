@@ -113,7 +113,7 @@ public class GPU {
     private void trainBatch(){
         if(VRAM != null){
             if(ticks == neededTicks()){
-                model.getData().addProcessed();
+                model.getData().addTrainedData();
                 VRAM.poll();
             }
             memoryLimitation++;
