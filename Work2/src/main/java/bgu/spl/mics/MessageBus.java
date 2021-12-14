@@ -7,17 +7,16 @@ package bgu.spl.mics;
  * You must not alter any of the given methods of this interface.  You cannot add methods to this interface.
  */
 public interface MessageBus {
-
     /**
-     * Subscribes {@code m} to receive {@link Event}s of type {@code type}.
-     * <p>
-     * @param <T>  The type of the result expected by the completed event.
-     * @param type The type to subscribe to,
-     * @param m    The subscribing micro-service.
-     *
-     * @pre: m!=null
-     * @post: None
-     */
+         * Subscribes {@code m} to receive {@link Event}s of type {@code type}.
+         * <p>
+         * @param <T>  The type of the result expected by the completed event.
+         * @param type The type to subscribe to,
+         * @param m    The subscribing micro-service.
+         *
+         * @pre: m!=null
+         * @post: None
+         */
     <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m);
 
     /**
@@ -134,7 +133,7 @@ public interface MessageBus {
      * @param m the microService that will get the massage
      * @return true if succeed else false
      */
-    public boolean sucSendBroadcast(MicroService m);
+    public boolean sucSendBroadcast(Message b, MicroService m);
 
     /**
      * @pre: m!=null
@@ -142,7 +141,7 @@ public interface MessageBus {
      * @param m the microService that will get the massage
      * @return true if succeed else false
      */
-    public boolean sucSendEvent(MicroService m);
+    public boolean sucSendEvent(Message e, MicroService m);
 
     /**
      * @pre: m!=null

@@ -21,7 +21,7 @@ public class TimeService extends MicroService{
 	private int speed;
 	private int duration;
 	private int currentTime = 0;
-	//need to check if TimeService is a singleton->yes
+
 	public TimeService(int speed, int duration) {
 		super("timeService");
 		this.speed = speed;

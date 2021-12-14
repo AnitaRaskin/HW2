@@ -1,11 +1,9 @@
 package bgu.spl.mics.application.objects;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.util.Timer;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 class
 CPUTest {
@@ -14,14 +12,10 @@ CPUTest {
 
 
 
-    @BeforeEach
+    @Before
     void setUp() {
         cpu = new CPU(4);
 
-    }
-
-    @AfterEach
-    void tearDown() {
     }
 
     @Test

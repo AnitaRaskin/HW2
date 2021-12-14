@@ -1,5 +1,11 @@
 package bgu.spl.mics.application;
+import bgu.spl.mics.MessageBus;
+import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.application.objects.*;
+import bgu.spl.mics.application.services.CPUService;
+import bgu.spl.mics.application.services.ConferenceService;
+import bgu.spl.mics.application.services.GPUService;
+import bgu.spl.mics.application.services.TimeService;
 import com.google.gson.*;//IMPORT GSON -> CAN READ FILE TYPE GiSON
 import java.io.FileReader;
 import java.io.IOException;
@@ -17,9 +23,7 @@ public class CRMSRunner {
             reader = new FileReader(args[0]);
         } catch (IOException e) {
             System.out.println("Exception"); //Not found/ not good file
-            System.exit(0);//exit - do not have a file empty
         }
-
         JsonObject object = JsonParser.parseReader(reader).getAsJsonObject();
 
         //start taking all the info from gson
@@ -38,6 +42,28 @@ public class CRMSRunner {
 
         int TickTime = object.get("TickTime").getAsInt();
         int Duration = object.get("Duration").getAsInt();
+
+
+        //create cluster & messageBus -> singleton
+        Cluster cluster = Cluster.getInstance();
+        MessageBus messageBus = MessageBusImpl.getInstance();
+
+        //give cluster all the gpu and cpu+create all the GPU/CPU services
+        for (int i = 0; i < CPUS.length; i++) {
+            cluster.addCPU(CPUS[i]);
+            CPUService cpuService = new CPUService(CPUS[i]);
+            //cpuService.run();
+        }
+        for (int i = 0; i < GPUS.length; i++) {
+            cluster.addGPU(GPUS[i]);
+            GPUService gpuService = new GPUService(GPUS[i]);
+            //gpuService.run();
+        }
+        for (int i = 0; i < conferences.length; i++) {
+            ConferenceService conferenceService = new ConferenceService(conferences[i]);
+            //conferenceService.run();
+        }
+        TimeService timeService = new TimeService(TickTime,Duration);
     }
 
     //helping methods to create all the objects
@@ -46,8 +72,7 @@ public class CRMSRunner {
         Student[] Students = new Student[size];
         for (int i = 0; i < size; i++) {
             JsonObject student = students.get(i).getAsJsonObject();
-            Students[i] = new Student(student.get("name").getAsString(), student.get("department").getAsString(),
-                    student.get("status").getAsString());
+            Students[i] = new Student(student.get("name").getAsString(), student.get("department").getAsString(), student.get("status").getAsString());
         }
         return Students;
     }
@@ -61,7 +86,7 @@ public class CRMSRunner {
             for (int j = 0; j < model.size(); j++) { //run over all the models
                 JsonObject mod = model.get(j).getAsJsonObject();
                 Data data = new Data(mod.get("type").getAsString(), mod.get("size").getAsInt());
-                models.set(i, new Model(mod.get("name").getAsString(), data, students[i]));
+                models.add(new Model(mod.get("name").getAsString(), data, students[i]));
             }
         }
         return models;
@@ -90,9 +115,9 @@ public class CRMSRunner {
         ConfrenceInformation[] Conferences = new ConfrenceInformation[size];
         for (int i = 0; i < size; i++) { //conferences
             JsonObject conference = conferences.get(i).getAsJsonObject();
-            Conferences[i] = new ConfrenceInformation(conference.get("name").getAsString(), conference.get("data").getAsInt());
+            Conferences[i] = new ConfrenceInformation(conference.get("name").getAsString(), conference.get("date").getAsInt());
         }
-        return Conferences;
+            return Conferences;
     }
 }
 

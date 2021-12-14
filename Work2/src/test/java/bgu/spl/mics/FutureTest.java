@@ -2,7 +2,6 @@ package bgu.spl.mics;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
 import java.util.concurrent.TimeUnit;
 
 
@@ -25,7 +24,7 @@ class FutureTest {
         assertThrows(Exception.class, ()->future.get());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void resolve() {
         future.resolve(null);
         assertEquals(null,future.get());
@@ -36,7 +35,7 @@ class FutureTest {
         assertThrows(Exception.class, ()->future.get());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void isDone() {
         //check for empty string not resolved yet
         assertEquals(false, future.isDone());
@@ -47,7 +46,7 @@ class FutureTest {
         assertThrows(Exception.class, ()->future.isDone());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testGet1() {
         assertNull(future.get(10, TimeUnit.MICROSECONDS),"exepted null");
 

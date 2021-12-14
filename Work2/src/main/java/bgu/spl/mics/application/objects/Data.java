@@ -1,5 +1,7 @@
 package bgu.spl.mics.application.objects;
 
+import java.util.Locale;
+
 /**
  * Passive object representing a data used by a model.
  * Add fields and methods to this class as you see fit (including public methods and constructors).
@@ -16,7 +18,7 @@ public class Data {
     private int processed;
     private int size;
     public Data(String type, int size){
-        this.type = Type.valueOf(type);
+        this.type = Type.valueOf(type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase());
         this.size = size;
         processed = 0;
     }
