@@ -15,18 +15,18 @@ public class Data {
     }
 
     private Type type;
-    private int processed;
+    private int trained;
     private int size;
     public Data(String type, int size){
         this.type = Type.valueOf(type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase());
         this.size = size;
-        processed = 0;
+        trained = 0;
     }
     public void addTrainedData(){
-        processed+=1000;
+        trained+=1000;
     }
     public boolean dataTrained(){
-        return (processed==size);
+        return (trained==size);
     }
     public Type getType() {
         return type;

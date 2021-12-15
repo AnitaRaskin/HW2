@@ -25,6 +25,7 @@ public abstract class MicroService implements Runnable {
     private boolean terminated = false;
     private final String name;
     private Hashtable<Class<? extends Message>, Callback> callback;
+    private MessageBus messageBus = MessageBusImpl.getInstance();
 
     /**
      * @param name the micro-service name (used mainly for debugging purposes -
@@ -57,6 +58,8 @@ public abstract class MicroService implements Runnable {
      */
     protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
         //TODO: implement this.
+        messageBus.subscribeEvent(type,this);
+        //need to understand what why need to do with the callback
     }
 
     /**
@@ -81,6 +84,8 @@ public abstract class MicroService implements Runnable {
      */
     protected final <B extends Broadcast> void subscribeBroadcast(Class<B> type, Callback<B> callback) {
         //TODO: implement this.
+        messageBus.subscribeBroadcast(type,this);
+        //need to understand what why need to do with the callback
     }
 
     /**
@@ -97,7 +102,8 @@ public abstract class MicroService implements Runnable {
      */
     protected final <T> Future<T> sendEvent(Event<T> e) {
         //TODO: implement this.
-        return null; //TODO: delete this line :)
+        Future<T> future = messageBus.sendEvent(e);
+        return future;
     }
 
     /**
@@ -108,6 +114,7 @@ public abstract class MicroService implements Runnable {
      */
     protected final void sendBroadcast(Broadcast b) {
         //TODO: implement this.
+        messageBus.sendBroadcast(b);
     }
 
     /**
@@ -122,6 +129,7 @@ public abstract class MicroService implements Runnable {
      */
     protected final <T> void complete(Event<T> e, T result) {
         //TODO: implement this.
+        messageBus.complete(e,result);
     }
 
     /**

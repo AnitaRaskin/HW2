@@ -93,14 +93,12 @@ public class GPU {
      * @post: size() = Disk
      *      *        @post size() = @pre size() - 1
      */
-    public boolean sendDataToPro(){
-        if(memoryLimitation > 0){//able to train dataBatch
+    public void sendDataToPro(){
+        while(memoryLimitation > 0){//able to train dataBatch
             DataBatch db = Disk.remove();
             memoryLimitation--;
             cluster.takeDataToProc(db);
-            return true;
         }
-        return false;
     }
 
     /**
