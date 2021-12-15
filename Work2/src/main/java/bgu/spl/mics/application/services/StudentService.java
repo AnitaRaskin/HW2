@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.*;
+import bgu.spl.mics.application.objects.Model;
 import bgu.spl.mics.application.objects.Student;
 
 /**
@@ -22,8 +23,14 @@ public class StudentService extends MicroService {
 
     @Override
     protected void initialize() {
-        messageBus.subscribeBroadcast(PublishConferenceBroadcast.class,this);
 
+        subscribeBroadcast(PublishConferenceBroadcast.class,()->{
+
+        });
+        for(Model model:student.getModelQueue()){
+            TrainModelEvent trainEvent = new TrainModelEvent(model);
+            sendEvent(trainEvent);
+        }
 
     }
 }

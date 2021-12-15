@@ -34,6 +34,14 @@ public class Student {
         modelQueue.add(model);
     }
 
+    public String getName(){
+        return name;
+    }
+
+    public Queue<Model> getModelQueue() {
+        return modelQueue;
+    }
+
     public void addPublications(){
         publications++;
     }
