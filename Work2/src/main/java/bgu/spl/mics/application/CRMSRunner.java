@@ -29,7 +29,7 @@ public class CRMSRunner {
         //start taking all the info from gson
         JsonArray Jstudents = object.getAsJsonArray("Students");
         Student[] students = createStudents(Jstudents);
-        ArrayList<Model> models = createModels(students, Jstudents);
+        createModels(students, Jstudents);
 
         JsonArray JGpus = object.getAsJsonArray("GPUS");
         GPU[] GPUS = createGPUs(JGpus);
@@ -77,8 +77,7 @@ public class CRMSRunner {
         return Students;
     }
 
-    public static ArrayList<Model> createModels(Student[] students, JsonArray Jstudents) {
-        ArrayList<Model> models = new ArrayList<Model>();
+    public static void createModels(Student[] students, JsonArray Jstudents) {
         int size = Jstudents.size();
         for (int i = 0; i < size; i++) {//students
             JsonObject student = Jstudents.get(i).getAsJsonObject();
@@ -86,10 +85,9 @@ public class CRMSRunner {
             for (int j = 0; j < model.size(); j++) { //run over all the models
                 JsonObject mod = model.get(j).getAsJsonObject();
                 Data data = new Data(mod.get("type").getAsString(), mod.get("size").getAsInt());
-                models.add(new Model(mod.get("name").getAsString(), data, students[i]));
+                students[i].addModel(new Model(mod.get("name").getAsString(), data, students[i]));
             }
         }
-        return models;
     }
 
     public static GPU[] createGPUs(JsonArray gpus) {

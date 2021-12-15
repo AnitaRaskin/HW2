@@ -5,6 +5,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+// to all MS we need to write a callback
+//Callback <Type message-class> nameofcallback = input name(going to be type of message-Broad or Eve) -> {
+//body of callback
+//};
+//put into mibna natunim to keep them in order- hash linked ex
 
 
 /**
@@ -125,7 +130,7 @@ public class MessageBusImpl implements MessageBus {
 	 * @pre:  None
 	 * @post: microservice_queue.containsKey(m) == true
 	 */
-	@Override
+	@Override //synchro ->tick reg only after this register
 	public void register(MicroService m) {
 		BlockingQueue<Message> mes = new LinkedBlockingQueue <Message>();
 		microservice_queues.put(m, mes); //the hash map is thread safe
@@ -136,7 +141,7 @@ public class MessageBusImpl implements MessageBus {
 	 * @param m the microservice to unregister.
 	 * if microservice.containsKey(m) == false then no need to do anything
 	 */
-	@Override
+	@Override //synchro
 	public void unregister(MicroService m) {
 		if(microservice_queues.containsKey(m)){ //registered
 			m.terminate();
