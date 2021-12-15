@@ -1,8 +1,12 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.MessageBus;
+import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.TickBroadcast;
 
 import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * TimeService is the global system timer There is only one instance of this micro-service.
@@ -21,31 +25,41 @@ public class TimeService extends MicroService{
 	private int speed;
 	private int duration;
 	private int currentTime = 0;
+	MessageBus messageBus = MessageBusImpl.getInstance();
 
 	public TimeService(int speed, int duration) {
 		super("timeService");
 		this.speed = speed;
 		this.duration = duration;
 	}
-	//tick()
-	private void broadcastTick(){
-		currentTime++;
-		//send broadcast of the updated time
-	}
 
 	/**
-	 * this function need to terminate all the event that are still running at the program
+	 * this function send the broadCast if we pass the duration
+	 * we build TickBroadcast with true parameter which mean that we need to terminate the service
+	 * otherwise we construct it with false parameter which it means to do regular tick
 	 */
-	private void terminateAll(){
-
+	private void broadcastTick(){
+		currentTime++;
+		TickBroadcast tickBroadcast;
+		if(currentTime>duration) {
+			tickBroadcast = new TickBroadcast(true);
+			terminate();
+		}
+		else
+			tickBroadcast = new TickBroadcast(false);
+		messageBus.sendBroadcast(tickBroadcast);
 	}
+
 	@Override
 	protected void initialize() {
-		// Timer
-		//TimerTask(tick())
-		//timer.(timertask)
-
-		//Timer
+		Timer timer = new Timer();
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				broadcastTick();
+			}
+		};
+		timer.schedule(task,speed,duration);
 	}
 
 }

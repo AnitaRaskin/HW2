@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.MicroService;
+import bgu.spl.mics.*;
+import bgu.spl.mics.application.objects.Student;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
@@ -12,14 +13,17 @@ import bgu.spl.mics.MicroService;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class StudentService extends MicroService {
-    public StudentService(String name) {
-        super("Change_This_Name");
-        // TODO Implement this
+    private Student student;
+    private MessageBus messageBus = MessageBusImpl.getInstance();
+    public StudentService(String name, Student student) {
+        super("studentServiceOf:"+name);
+        this.student = student;
     }
 
     @Override
     protected void initialize() {
-        // TODO Implement this
+        messageBus.subscribeBroadcast(PublishConferenceBroadcast.class,this);
+
 
     }
 }

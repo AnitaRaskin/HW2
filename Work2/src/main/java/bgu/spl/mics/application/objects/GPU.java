@@ -113,9 +113,11 @@ public class GPU {
             if(ticks == neededTicks()){
                 model.getData().addTrainedData();
                 VRAM.poll();
+                runTime += ticks;
+                ticks=0;
+                memoryLimitation++;
+                sendDataToPro();
             }
-            memoryLimitation++;
-            sendDataToPro();
         }
         else
             ticks = 0;

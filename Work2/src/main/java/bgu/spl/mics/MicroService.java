@@ -24,7 +24,7 @@ public abstract class MicroService implements Runnable {
 
     private boolean terminated = false;
     private final String name;
-    private Hashtable<Class<? extends Message>, Callback> callback;
+    private Hashtable<Class<? extends Message>, Callback> callbackEvent;
     private MessageBus messageBus = MessageBusImpl.getInstance();
 
     /**
@@ -59,7 +59,7 @@ public abstract class MicroService implements Runnable {
     protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
         //TODO: implement this.
         messageBus.subscribeEvent(type,this);
-        //need to understand what why need to do with the callback
+        callbackEvent.put(type,callback);
     }
 
     /**
@@ -85,7 +85,7 @@ public abstract class MicroService implements Runnable {
     protected final <B extends Broadcast> void subscribeBroadcast(Class<B> type, Callback<B> callback) {
         //TODO: implement this.
         messageBus.subscribeBroadcast(type,this);
-        //need to understand what why need to do with the callback
+        callbackEvent.put(type,callback);
     }
 
     /**
@@ -159,9 +159,14 @@ public abstract class MicroService implements Runnable {
      */
     @Override
     public final void run() {
+        messageBus.register(this);
         initialize();
         while (!terminated) {
-            System.out.println("NOT IMPLEMENTED!!!"); //TODO: you should delete this line :)
+            try {
+                Message message = messageBus.awaitMessage(this);
+                callbackEvent.get(message).call(message);
+            } catch (InterruptedException e) {
+            }
         }
     }
 
