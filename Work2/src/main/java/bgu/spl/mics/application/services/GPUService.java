@@ -1,6 +1,8 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.Callback;
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.Terminated;
 import bgu.spl.mics.application.objects.GPU;
 
 /**
@@ -24,7 +26,10 @@ public class GPUService extends MicroService {
 
     @Override
     protected void initialize() {
-        // TODO Implement this
+        Callback<Terminated> terminatedGPU = terminated -> {
+            this.terminate();
+        };
+        callbackEvent.put(Terminated.class, terminatedGPU);
 
     }
 }

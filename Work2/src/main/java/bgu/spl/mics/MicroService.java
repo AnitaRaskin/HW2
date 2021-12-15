@@ -24,7 +24,7 @@ public abstract class MicroService implements Runnable {
 
     private boolean terminated = false;
     private final String name;
-    private Hashtable<Class<? extends Message>, Callback> callbackEvent;
+    protected Hashtable<Class<? extends Message>, Callback> callbackEvent;
     private MessageBus messageBus = MessageBusImpl.getInstance();
 
     /**
@@ -59,7 +59,6 @@ public abstract class MicroService implements Runnable {
     protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
         //TODO: implement this.
         messageBus.subscribeEvent(type,this);
-        callbackEvent.put(type,callback);
     }
 
     /**

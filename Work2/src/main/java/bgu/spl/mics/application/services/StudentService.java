@@ -23,10 +23,10 @@ public class StudentService extends MicroService {
 
     @Override
     protected void initialize() {
-
-        subscribeBroadcast(PublishConferenceBroadcast.class,()->{
-
-        });
+        Callback <PublishConferenceBroadcast> publishConferenceBroadcastCallback = publishConferenceBroadcast -> {
+            sendBroadcast(publishConferenceBroadcast.getB());
+        };
+        callbackEvent.put(PublishConferenceBroadcast.class, publishConferenceBroadcastCallback);
         for(Model model:student.getModelQueue()){
             TrainModelEvent trainEvent = new TrainModelEvent(model);
             sendEvent(trainEvent);

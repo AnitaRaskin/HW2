@@ -2,13 +2,11 @@ package bgu.spl.mics.application;
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.application.objects.*;
-import bgu.spl.mics.application.services.CPUService;
-import bgu.spl.mics.application.services.ConferenceService;
-import bgu.spl.mics.application.services.GPUService;
-import bgu.spl.mics.application.services.TimeService;
+import bgu.spl.mics.application.services.*;
 import com.google.gson.*;//IMPORT GSON -> CAN READ FILE TYPE GiSON
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 /** This is the Main class of Compute Resources Management System application. You should parse the input file,
@@ -48,22 +46,36 @@ public class CRMSRunner {
         Cluster cluster = Cluster.getInstance();
         MessageBus messageBus = MessageBusImpl.getInstance();
 
-        //give cluster all the gpu and cpu+create all the GPU/CPU services
+        //create all the services
         for (int i = 0; i < CPUS.length; i++) {
             cluster.addCPU(CPUS[i]);
             CPUService cpuService = new CPUService(CPUS[i]);
-            //cpuService.run();
+            cpuService.run();
         }
         for (int i = 0; i < GPUS.length; i++) {
             cluster.addGPU(GPUS[i]);
             GPUService gpuService = new GPUService(GPUS[i]);
-            //gpuService.run();
+            gpuService.run();
         }
         for (int i = 0; i < conferences.length; i++) {
             ConferenceService conferenceService = new ConferenceService(conferences[i]);
-            //conferenceService.run();
+            conferenceService.run();
         }
+        for (int i = 0; i < students.length; i++) {
+            StudentService studentService = new StudentService(students[i].getName(),students[i]);
+            studentService.run();
+        }
+
         TimeService timeService = new TimeService(TickTime,Duration);
+
+        try {
+            PrintWriter a = new PrintWriter("./output.txt");
+            a.println();
+            a.close();
+        }catch (IOException e){
+            System.out.println("IOException");
+        }
+
     }
 
     //helping methods to create all the objects

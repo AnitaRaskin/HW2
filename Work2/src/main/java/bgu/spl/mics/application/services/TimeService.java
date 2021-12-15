@@ -1,9 +1,6 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.MessageBus;
-import bgu.spl.mics.MessageBusImpl;
-import bgu.spl.mics.MicroService;
-import bgu.spl.mics.TickBroadcast;
+import bgu.spl.mics.*;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -53,13 +50,8 @@ public class TimeService extends MicroService{
 	@Override
 	protected void initialize() {
 		Timer timer = new Timer();
-		TimerTask task = new TimerTask() {
-			@Override
-			public void run() {
-				broadcastTick();
-			}
-		};
-		timer.schedule(task,speed,duration);
+		//TimerTask task = () -> { broadcastTick() };
+		//timer.schedule(task,speed,duration);
 	}
 
 }

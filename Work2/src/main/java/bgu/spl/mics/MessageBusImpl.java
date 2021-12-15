@@ -1,15 +1,12 @@
 package bgu.spl.mics;
 import bgu.spl.mics.application.objects.Cluster;
-
+import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 // to all MS we need to write a callback
 //Callback <Type message-class> nameofcallback = input name(going to be type of message-Broad or Eve) -> {
 //body of callback
 //};
-//put into mibna natunim to keep them in order- hash linked ex
 
 
 /**
@@ -18,19 +15,20 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class MessageBusImpl implements MessageBus {
 	//Fields
-	private ConcurrentHashMap<Class<? extends Event>, ConcurrentLinkedQueue<MicroService>> events_MS;
-	private ConcurrentHashMap<Class<? extends Broadcast>, ConcurrentLinkedQueue<MicroService>> broadcasts_MS;
-	private ConcurrentHashMap<MicroService, BlockingQueue<Message>> microservice_queues;
-	private ConcurrentHashMap<Event, Future> futureOfEvent;
+	private HashMap<Class<? extends Event>, BlockingQueue<MicroService>> events_MS;
+	private HashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>> broadcasts_MS;
+	private HashMap<MicroService, BlockingQueue<Message>> microservice_queues;
+	private HashMap<Event, Future> futureOfEvent;
 	private static MessageBus thisMB = null;
+	private static Object micro_queue = new Object();
 
 
 	//Constructor
 	private MessageBusImpl(){ //check if this is a method
-		events_MS = new ConcurrentHashMap();
-		broadcasts_MS = new ConcurrentHashMap();
-		microservice_queues = new ConcurrentHashMap();
-		futureOfEvent = new ConcurrentHashMap();
+		events_MS = new HashMap();
+		broadcasts_MS = new HashMap();
+		microservice_queues = new HashMap();
+		futureOfEvent = new HashMap();
 	}
 
 	/**
@@ -54,13 +52,13 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-		ConcurrentLinkedQueue<MicroService> queueMS;
+		BlockingQueue<MicroService> queueMS;
 		Boolean found = false;
 		if(!events_MS.containsKey(type)){
-			queueMS = new ConcurrentLinkedQueue<MicroService>();
+			queueMS = new LinkedBlockingQueue<MicroService>();
 		}
 		else{ //type exists
-			queueMS = (ConcurrentLinkedQueue<MicroService>) events_MS.get(type); //get()->return the value of this key
+			queueMS = events_MS.get(type); //get()->return the value of this key
 			//check if MS is already subscribed
 			for(MicroService ms: queueMS){
 				if(ms == m){
@@ -85,13 +83,13 @@ public class MessageBusImpl implements MessageBus {
 	@Override
 	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
 		if(microservice_queues.containsKey(m)){ // m is registered
-			ConcurrentLinkedQueue<MicroService> queueMS;
+			BlockingQueue<MicroService> queueMS;
 			Boolean found = false;
 			if(!broadcasts_MS.containsKey(type)){
-				queueMS = new ConcurrentLinkedQueue<MicroService>();
+				queueMS = new LinkedBlockingQueue<MicroService>();
 			}
 			else{ //type exists
-				queueMS = (ConcurrentLinkedQueue<MicroService>) broadcasts_MS.get(type); //get()->return the value of this key
+				queueMS = broadcasts_MS.get(type); //get()->return the value of this key
 				for(MicroService ms: queueMS){
 					if(ms == m){
 						found = true; //I do not want to enter m twice
@@ -130,10 +128,12 @@ public class MessageBusImpl implements MessageBus {
 	 * @pre:  None
 	 * @post: microservice_queue.containsKey(m) == true
 	 */
-	@Override //synchro ->tick reg only after this register
+	@Override //->tick reg only after this register
 	public void register(MicroService m) {
-		BlockingQueue<Message> mes = new LinkedBlockingQueue <Message>();
-		microservice_queues.put(m, mes); //the hash map is thread safe
+		synchronized (micro_queue){
+			BlockingQueue<Message> mes = new LinkedBlockingQueue <Message>();
+			microservice_queues.put(m, mes);
+		}
 	}
 
 	/**
@@ -141,17 +141,19 @@ public class MessageBusImpl implements MessageBus {
 	 * @param m the microservice to unregister.
 	 * if microservice.containsKey(m) == false then no need to do anything
 	 */
-	@Override //synchro
+	@Override
 	public void unregister(MicroService m) {
 		if(microservice_queues.containsKey(m)){ //registered
 			m.terminate();
-			//remove from all the hash maps
-			//microservice
-			microservice_queues.remove(m);
-			//events
-			while(events_MS.values().remove(m));
-			//broadcast
-			while(broadcasts_MS.values().remove(m));
+				//remove from all the hash maps
+				//microservice
+			synchronized (micro_queue) {
+				microservice_queues.remove(m);
+				//events
+				while(events_MS.values().remove(m));
+				//broadcast
+				while(broadcasts_MS.values().remove(m));
+			}
 		}
 	}
 
@@ -164,10 +166,11 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public void sendBroadcast(Broadcast b) {
-		ConcurrentLinkedQueue<MicroService> microServicesOFb= broadcasts_MS.get(b.getClass());
+		BlockingQueue<MicroService> microServicesOFb= broadcasts_MS.get(b.getClass());
 		for(MicroService ms:microServicesOFb){
 			microservice_queues.get(ms).add(b);
 		}
+		notifyAll();
 	}
 
 	/**
@@ -181,12 +184,13 @@ public class MessageBusImpl implements MessageBus {
 	public <T> Future<T> sendEvent(Event<T> e) {
 		Future<T> ev_future = new Future<T>();
 		futureOfEvent.put(e, ev_future);
-		ConcurrentLinkedQueue<MicroService> microServicesOFe= events_MS.get(e.getClass());
+		BlockingQueue<MicroService> microServicesOFe= events_MS.get(e.getClass());
 		MicroService first = microServicesOFe.poll();
 		if(first != null){
 			microservice_queues.get(first).add(e);
 			microServicesOFe.add(first);
 		}
+		notifyAll();
 		return ev_future;
 	}
 
@@ -200,8 +204,17 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public Message awaitMessage(MicroService m) throws InterruptedException {
-
-		return null;
+		BlockingQueue<Message> ms = microservice_queues.get(m);
+		synchronized (microservice_queues) {
+			while (ms.isEmpty()) {
+				try {
+					this.wait();
+				} catch (InterruptedException e) {
+					System.out.println("InterruptedException");
+				}
+			}
+			return null;
+		}
 	}
 
 
@@ -213,7 +226,7 @@ public class MessageBusImpl implements MessageBus {
 	 * @return True or False
 	 */
 	public <T> boolean microserviceInEvents(Class<? extends Event<T>> type, MicroService m){
-		ConcurrentLinkedQueue<MicroService> microServicesOFe= events_MS.get(type);
+		BlockingQueue<MicroService> microServicesOFe= events_MS.get(type);
 		return (microServicesOFe.contains(m));
 	}
 
@@ -225,7 +238,7 @@ public class MessageBusImpl implements MessageBus {
 	 * @return True or False
 	 */
 	public boolean microserviceInBroadcasts(Class<? extends Broadcast> type, MicroService m){
-		ConcurrentLinkedQueue<MicroService> microServicesOFb= broadcasts_MS.get(type);
+		BlockingQueue<MicroService> microServicesOFb= broadcasts_MS.get(type);
 		return (microServicesOFb.contains(m));
 	}
 
@@ -288,6 +301,12 @@ public class MessageBusImpl implements MessageBus {
 		return (microservice_queues.containsKey(m));
 	}
 
+	/**
+	 *
+	 *
+	 * @param m the microService we want tp get massage from him
+	 * @return Boolean - true, false
+	 */
 	public boolean hasAwaitMassage(MicroService m){
 		return  true;
 	}

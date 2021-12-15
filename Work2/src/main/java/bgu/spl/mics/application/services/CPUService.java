@@ -1,6 +1,6 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.MicroService;
+import bgu.spl.mics.*;
 import bgu.spl.mics.application.objects.CPU;
 
 /**
@@ -22,7 +22,13 @@ public class CPUService extends MicroService {
 
     @Override
     protected void initialize() {
-        // TODO Implement this
-
+        Callback<Terminated> terminatedCPU = terminated -> {
+            terminate();
+        };
+        callbackEvent.put(Terminated.class, terminatedCPU);
+        Callback<TickBroadcast> tickBroadcastCallback = doTick -> {
+            cpu.updateTime();
+        };
+        callbackEvent.put(TickBroadcast.class, tickBroadcastCallback);
     }
 }
