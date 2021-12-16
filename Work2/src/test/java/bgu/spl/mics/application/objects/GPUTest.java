@@ -25,7 +25,7 @@ class GPUTest {
         Student student = new Student("Checker","Uni", "MSc");
         Data data = new Data("Images",1000);
         Model model = new Model("test",data,student);
-        //assertNotNull(gpu.getModel(), "Excepted the model to be null");
+        assertEquals(null,gpu.getModel(),"Excepted the model to be null");
         gpu.updateModel(model);
         assertNotEquals(model,gpu.getModel());
     }
@@ -37,7 +37,7 @@ class GPUTest {
         Model model = new Model("test",data,student);
         assertEquals(0,gpu.getDisk().size());
         gpu.splitDataToBatches();
-        assertEquals(1000,gpu.getDisk().size());
+        assertEquals(1,gpu.getDisk().size());
     }
 
     @Test
@@ -54,9 +54,9 @@ class GPUTest {
         Data data = new Data("Images",1000);
         Model model = new Model("test",data,student);
         gpu.splitDataToBatches();
-        assertEquals(1000,gpu.getDisk().size());
+        assertEquals(1,gpu.getDisk().size());
         gpu.sendDataToPro();
-        assertEquals(999,gpu.getDisk().size());
+        assertEquals(0,gpu.getDisk().size());
     }
 
     @Test
@@ -66,27 +66,4 @@ class GPUTest {
         assertEquals(currentTick+1, gpu.getTicks());
     }
 
-
-//    @Test
-//    void trainBatch() {
-//        DataBatch dataBatch = new DataBatch();
-//        gpu.addProcessedData(dataBatch);
-//        assertEquals(1,gpu.getVRAM().size());
-//        gpu_mid.addProcessedData(dataBatch);
-//        assertEquals(1,gpu_mid.getVRAM().size());
-//        gpu_mid.addProcessedData(dataBatch);
-//        assertEquals(1,gpu_mid.getVRAM().size());
-//        int currentTick = gpu.getTicks();
-//        gpu.trainBatch();
-//        assertEquals(currentTick+1,gpu.getTicks());
-//        assertEquals(0,gpu.getVRAM().size());
-//        int currentTickM = gpu_mid.getTicks();
-//        gpu_mid.trainBatch();
-//        assertEquals(currentTickM+2,gpu_mid.getTicks());
-//        assertEquals(0,gpu_mid.getVRAM().size());
-//        int currentTickS = gpu_slow.getTicks();
-//        gpu_slow.trainBatch();
-//        assertEquals(currentTickS+3,gpu_slow.getTicks());
-//        assertEquals(0,gpu_slow.getVRAM().size());
-//    }
 }

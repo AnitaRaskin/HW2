@@ -50,7 +50,12 @@ public class TimeService extends MicroService{
 	@Override
 	protected void initialize() {
 		Timer timer = new Timer();
-		TimerTask task = (() -> broadcastTick());
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				broadcastTick();
+			}
+		};
 		timer.schedule(task,speed,duration);
 		terminate();
 	}
