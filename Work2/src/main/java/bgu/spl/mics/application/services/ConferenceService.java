@@ -1,11 +1,10 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.MicroService;
+import bgu.spl.mics.*;
 import bgu.spl.mics.application.objects.ConfrenceInformation;
 
 /**
  * Conference service is in charge of
- * aggregating good results and publishing them via the {@link PublishConfrenceBroadcast},
  * after publishing results the conference will unregister from the system.
  * This class may not hold references for objects which it is not responsible for.
  *
@@ -18,13 +17,26 @@ public class ConferenceService extends MicroService {
     private String name;
 
     public ConferenceService(ConfrenceInformation confrenceInformation) {
-        super("confrenceInformation");
+        super("conferenceInformation");
         this.confrenceInformation = confrenceInformation;
     }
 
     @Override
     protected void initialize() {
-        // TODO Implement this
+        //basic subscribe - terminate and tickBroadcast
+        subscribeBroadcast(Terminated.class, (terminate) -> this.terminate());
+        subscribeBroadcast(TickBroadcast.class, (tick) -> this.confrenceInformation.doTick());
+
+        //PublishResultsEvent- the model will always be good
+        subscribeEvent(PublishResultsEvent.class, (addModel) -> confrenceInformation.addInfo(t.getModel()));
+
+        /**
+         *
+         * PublishConferenceBroadcast:
+         * a. broadcast all the GOOD models at a set time -> to the students
+         * b. unregister
+         */
+        sendBroadcast(PublishConferenceBroadcast);
 
     }
 }

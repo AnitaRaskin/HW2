@@ -11,11 +11,13 @@ public class ConfrenceInformation {
     private String name;
     private int date;
     private LinkedList<Model> conInfo;
+    private int tick;
 
     public ConfrenceInformation(String name, int date){
         this.name = name;
         this.date = date;
         conInfo = new LinkedList<>();
+        tick = 0;
     }
 
     public void addInfo (Model model){
@@ -28,5 +30,25 @@ public class ConfrenceInformation {
 
     public LinkedList<Model> getConInfo() {
         return conInfo;
+    }
+
+    /**
+     *
+     * this service is registered to tickBroadcast so it should update tick
+     * @post: size() = tick
+     *        @post size = @pre size + 1
+     *
+     */
+    public void doTick(){
+        tick = tick + 1;
+    }
+
+    /**
+     *
+     * a getter function
+     * @return tick
+     */
+    public int getTick(){
+        return tick;
     }
 }

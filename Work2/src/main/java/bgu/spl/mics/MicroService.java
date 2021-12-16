@@ -24,7 +24,7 @@ public abstract class MicroService implements Runnable {
 
     private boolean terminated = false;
     private final String name;
-    protected Hashtable<Class<? extends Message>, Callback> callbackEvent;
+    private Hashtable<Class<? extends Message>, Callback> callbackEvent;
     private MessageBus messageBus = MessageBusImpl.getInstance();
 
     /**
@@ -165,6 +165,7 @@ public abstract class MicroService implements Runnable {
                 Message message = messageBus.awaitMessage(this);
                 callbackEvent.get(message).call(message);
             } catch (InterruptedException e) {
+                System.out.println("InterruptedException");
             }
         }
     }
