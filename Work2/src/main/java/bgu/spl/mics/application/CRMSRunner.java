@@ -4,17 +4,16 @@ import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.application.objects.*;
 import bgu.spl.mics.application.services.*;
 import com.google.gson.*;//IMPORT GSON -> CAN READ FILE TYPE GiSON
-
 import java.io.*;
-import java.util.ArrayList;
 
 /** This is the Main class of Compute Resources Management System application. You should parse the input file,
  * create the different instances of the objects, and run the system.
  * In the end, you should output a text file.
  */
-public class    CRMSRunner {
+public class CRMSRunner {
     public static void main(String[] args) throws IOException {
 
+        //<editor-fold desc="input-file>
         FileReader reader = null;
         try {
             reader = new FileReader(args[0]);
@@ -66,6 +65,7 @@ public class    CRMSRunner {
         }
 
         TimeService timeService = new TimeService(TickTime, Duration);
+        //</editor-fold>
 
         //<editor-fold desc="output-file>
         File file = new File("./output.txt");
@@ -124,7 +124,7 @@ public class    CRMSRunner {
         print.println("    ],");
 
         //Help function
-        int cpuTime,gpuTime;
+        int cpuTime=0,gpuTime = 0;
         for(CPU cpu:CPUS){
             cpuTime = cpuTime + cpu.getRunTime();
         }
@@ -134,7 +134,7 @@ public class    CRMSRunner {
 
         print.println("    \"cpuTimeUsed\": " + cpuTime + ",");
         print.println("    \"gpuTimeUsed\": " + gpuTime + ",");
-        print.println("    \"batchesProcessed\": " + );
+        print.println("    \"batchesProcessed\": " +cluster.getDataBatchSize() );
         print.println("}");
         //</editor-fold>
     }

@@ -14,6 +14,7 @@ import java.util.Queue;
 public class Cluster {
 	//field
 	private static Cluster thisCluster = null;
+	private static int dataBatchSize;
 	private static Queue<CPU> CPUS;
 	private static Queue<GPU> GPUS;
 	private static Queue<DataBatch> dataFromGPU;
@@ -36,6 +37,7 @@ public class Cluster {
 	private Cluster (){
 		GPUS = new LinkedList<GPU>();
 		CPUS = new LinkedList<CPU>();
+		dataBatchSize = 0;
 	}
 	public void addCPU(CPU cpu){
 		synchronized (lockCPU) {
@@ -118,6 +120,7 @@ public class Cluster {
 	public void sendProcessedData(DataBatch dataBatch){
 		synchronized (lockReturnDG){
 			Data originOfData = dataBatch.getData();
+			dataBatchSize = dataBatchSize + 1;
 			boolean found = false;
 			for(int i=0; i<= GPUS.size() && !found; i++){
 				GPU currentGPU = GPUS.poll();
@@ -127,5 +130,8 @@ public class Cluster {
 				}
 			}
 		}
+	}
+	public int getDataBatchSize(){
+		return dataBatchSize;
 	}
 }
