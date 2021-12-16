@@ -1,9 +1,7 @@
 package bgu.spl.mics.application.objects;
-
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 
 class GPUTest {

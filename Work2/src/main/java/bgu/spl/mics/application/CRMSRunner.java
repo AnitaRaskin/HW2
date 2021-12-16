@@ -19,13 +19,14 @@ public class CRMSRunner {
             reader = new FileReader(args[0]);
         } catch (IOException e) {
             System.out.println("Exception"); //Not found/ not good file
+            System.exit(0);//exit - do not have a file empty
         }
         JsonObject object = JsonParser.parseReader(reader).getAsJsonObject();
 
         //start taking all the info from gson
-        JsonArray Jstudents = object.getAsJsonArray("Students");
-        Student[] students = createStudents(Jstudents);
-        Model[] models = createModels(students, Jstudents);
+        JsonArray JsonStudents = object.getAsJsonArray("Students");
+        Student[] students = createStudents(JsonStudents);
+        Model[] models = createModels(students, JsonStudents);
 
         JsonArray JGpus = object.getAsJsonArray("GPUS");
         GPU[] GPUS = createGPUs(JGpus);
@@ -39,32 +40,37 @@ public class CRMSRunner {
         int TickTime = object.get("TickTime").getAsInt();
         int Duration = object.get("Duration").getAsInt();
 
-
         //create cluster & messageBus -> singleton
         Cluster cluster = Cluster.getInstance();
         MessageBus messageBus = MessageBusImpl.getInstance();
 
         //create all the services
-        for (int i = 0; i < CPUS.length; i++) {
-            cluster.addCPU(CPUS[i]);
-            CPUService cpuService = new CPUService(CPUS[i]);
-            cpuService.run();
+        for(CPU cpu:CPUS){
+            cluster.addCPU(cpu);
+            CPUService cpuService = new CPUService(cpu);
+            Thread t = new Thread(cpuService);
+            t.start();
         }
-        for (int i = 0; i < GPUS.length; i++) {
-            cluster.addGPU(GPUS[i]);
-            GPUService gpuService = new GPUService(GPUS[i]);
-            gpuService.run();
+        for(GPU gpu:GPUS){
+            cluster.addGPU(gpu);
+            GPUService gpuService = new GPUService(gpu);
+            Thread t = new Thread(gpuService);
+            t.start();
         }
-        for (int i = 0; i < conferences.length; i++) {
-            ConferenceService conferenceService = new ConferenceService(conferences[i]);
-            conferenceService.run();
+        for(ConfrenceInformation confrenceInformation:conferences){
+            ConferenceService conferenceService = new ConferenceService(confrenceInformation);
+            Thread t = new Thread(conferenceService);
+            t.start();
         }
-        for (int i = 0; i < students.length; i++) {
-            StudentService studentService = new StudentService(students[i].getName(), students[i]);
-            studentService.run();
+        for(Student student:students){
+            StudentService studentService = new StudentService(student.getName(), student);
+            Thread t = new Thread(studentService);
+            t.start();
         }
-
         TimeService timeService = new TimeService(TickTime, Duration);
+        Thread thread = new Thread(timeService);
+        thread.start();
+
         //</editor-fold>
 
         //<editor-fold desc="output-file>
@@ -150,11 +156,11 @@ public class CRMSRunner {
         return Students;
     }
 
-    public static Model[] createModels(Student[] students, JsonArray Jstudents) {
-        int size = Jstudents.size();
+    public static Model[] createModels(Student[] students, JsonArray JsonStudents) {
+        int size = JsonStudents.size();
         Model[] models = new Model[size];
         for (int i = 0; i < size; i++) {//students
-            JsonObject student = Jstudents.get(i).getAsJsonObject();
+            JsonObject student = JsonStudents.get(i).getAsJsonObject();
             JsonArray model = student.getAsJsonArray("models"); //array of models
             for (int j = 0; j < model.size(); j++) { //run over all the models
                 JsonObject mod = model.get(j).getAsJsonObject();

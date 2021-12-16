@@ -19,6 +19,7 @@ public class TimeService extends MicroService{
 	// end
 
 	//Fields
+	private Timer timer;
 	private int speed;
 	private int duration;
 	private int currentTime = 0;
@@ -28,6 +29,7 @@ public class TimeService extends MicroService{
 		super("timeService");
 		this.speed = speed;
 		this.duration = duration;
+		timer= new Timer();
 	}
 
 	/**
@@ -36,28 +38,28 @@ public class TimeService extends MicroService{
 	 * otherwise we construct it with false parameter which it means to do regular tick
 	 */
 	private void broadcastTick(){
+		System.out.println(currentTime);
 		currentTime++;
 		Broadcast tickBroadcast;
-		if(currentTime>duration) {
-			tickBroadcast = new Terminated();
-			terminate();
+		if(currentTime == duration) {
+			sendBroadcast(new Terminated());
+			timer.cancel();
 		}
-		else
+		else {
 			tickBroadcast = new TickBroadcast();
-		messageBus.sendBroadcast(tickBroadcast);
+			messageBus.sendBroadcast(tickBroadcast);
+		}
+
 	}
 
 	@Override
 	protected void initialize() {
-		Timer timer = new Timer();
+		subscribeBroadcast(Terminated.class, (terminate) -> this.terminate());
 		TimerTask task = new TimerTask() {
-			@Override
 			public void run() {
 				broadcastTick();
 			}
 		};
-		timer.schedule(task,speed,duration);
-		terminate();
+		timer.schedule(task,1,speed);
 	}
-
 }

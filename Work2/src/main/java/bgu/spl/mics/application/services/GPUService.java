@@ -20,7 +20,7 @@ public class GPUService extends MicroService {
     private GPU gpu;
     private Queue<TestModelEvent> testModelEventQueue;
     private Queue<TrainModelEvent> trainModelEventQueue;
-    private TrainModelEvent currentEV = null;
+    private TrainModelEvent currentEV = null;//WHY ONLY TRAIN AND NOT TEST
     private String name;
 
     public GPUService(GPU gpu) {
@@ -35,7 +35,7 @@ public class GPUService extends MicroService {
      * and then assign the gpu with train model only if it's possible
      */
     private void updateTheEvent(){
-        while(testModelEventQueue != null){
+        while(testModelEventQueue != null){ //COULD STACK ALL THE PROGRAM
             TestModelEvent testModelEve = testModelEventQueue.poll();
             gpu.updateModel(testModelEve.getModel());
             gpu.testModel();
@@ -70,7 +70,7 @@ public class GPUService extends MicroService {
             }
             else {
                 if(gpu.getModel().getData().dataTrained()){
-                    complete(currentEV,currentEV.getModel());
+                    complete(currentEV,currentEV.getModel());//WHY MODEL AND NOT RESULT
                     updateTheEvent();
                 }
                 gpu.doTick();

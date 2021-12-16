@@ -16,7 +16,6 @@ public class ConferenceService extends MicroService {
     /**
      *
      * Constructor
-     * @param confrenceInformation
      */
     public ConferenceService(ConfrenceInformation confrenceInformation) {
         super("conferenceInformation");
@@ -45,8 +44,8 @@ public class ConferenceService extends MicroService {
         /**
          *
          * PublishResultsEvent:
-         * will add to confrenceInformation the "Good" model the studend send him
-         * add to the linkedlist confrenceInformation
+         * will add to conferenceInformation the "Good" model the student send him
+         * add to the linked-list conferenceInformation
          */
         subscribeEvent(PublishResultsEvent.class, (addModel) -> confrenceInformation.addInfo(addModel.getModel()));
 

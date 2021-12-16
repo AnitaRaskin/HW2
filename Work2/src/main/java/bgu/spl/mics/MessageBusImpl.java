@@ -134,6 +134,7 @@ public class MessageBusImpl implements MessageBus {
 			BlockingQueue<Message> mes = new LinkedBlockingQueue <Message>();
 			microservice_queues.put(m, mes);
 		}
+		System.out.println(m + "is registered");
 	}
 
 	/**
@@ -155,6 +156,7 @@ public class MessageBusImpl implements MessageBus {
 				while(broadcasts_MS.values().remove(m));
 			}
 		}
+		System.out.println(m + "unregistered");
 	}
 
 	/**
@@ -166,11 +168,19 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public void sendBroadcast(Broadcast b) {
-		BlockingQueue<MicroService> microServicesOFb= broadcasts_MS.get(b.getClass());
-		for(MicroService ms:microServicesOFb){
-			microservice_queues.get(ms).add(b);
+		if(broadcasts_MS.get(b) != null) {
+			BlockingQueue<MicroService> microServicesOFb = broadcasts_MS.get(b.getClass());
+
+			for (MicroService ms : microServicesOFb) {
+				System.out.println(ms.getName());
+				System.out.println(	microservice_queues.get(ms));
+				microservice_queues.get(ms).add(b);
+			}
+			synchronized (microservice_queues) {
+				microservice_queues.notifyAll();
+			}
 		}
-		notifyAll();
+		System.out.println(b + "sended broadcast");
 	}
 
 	/**
@@ -190,7 +200,10 @@ public class MessageBusImpl implements MessageBus {
 			microservice_queues.get(first).add(e);
 			microServicesOFe.add(first);
 		}
-		notifyAll();
+		synchronized (microservice_queues) {
+			microservice_queues.notifyAll();
+		}
+		System.out.println(e + "sended event");
 		return ev_future;
 	}
 
@@ -208,12 +221,12 @@ public class MessageBusImpl implements MessageBus {
 		synchronized (microservice_queues) {
 			while (ms.isEmpty()) {
 				try {
-					this.wait();
+					microservice_queues.wait();
 				} catch (InterruptedException e) {
 					System.out.println("InterruptedException");
 				}
 			}
-			return null;
+			return (microservice_queues.get(m).poll());
 		}
 	}
 

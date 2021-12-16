@@ -33,6 +33,7 @@ public abstract class MicroService implements Runnable {
      */
     public MicroService(String name) {
         this.name = name;
+        callbackEvent = new Hashtable<Class<? extends Message>, Callback>();
     }
 
     /**
@@ -159,16 +160,20 @@ public abstract class MicroService implements Runnable {
     @Override
     public final void run() {
         messageBus.register(this);
+        subscribeBroadcast(Terminated.class, (c) -> terminate());
         initialize();
         while (!terminated) {
             try {
                 Message message = messageBus.awaitMessage(this);
-                callbackEvent.get(message).call(message);
+                if(callbackEvent.get(message) != null){
+                    callbackEvent.get(message).call(message);
+                }
             } catch (InterruptedException e) {
                 System.out.println("InterruptedException");
             }
         }
         messageBus.unregister(this);
+        System.out.println("microservice terminated: "+this.getName());
     }
 
 }
