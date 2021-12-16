@@ -67,7 +67,7 @@ public class    CRMSRunner {
 
         TimeService timeService = new TimeService(TickTime, Duration);
 
-        //output file
+        //<editor-fold desc="output-file>
         File file = new File("./output.txt");
         FileWriter writer = new FileWriter(file);
         PrintWriter print = new PrintWriter(writer);
@@ -96,24 +96,47 @@ public class    CRMSRunner {
             print.println("        },");
         }
         print.println("    ],"); //end of all the students
-        print.println("    \"conferences\": [");
-        for(ConfrenceInformation confrenceInformation:conferences){
-            print.println("    \"conferences\": [");
+        print.print("    \"conferences\": [");
+        for(ConfrenceInformation confrenceInformation:conferences) {
+            print.println("        {");
+            print.println("            \"name\": " + confrenceInformation.getName() + ",");
+            print.println("            \"date\": " + confrenceInformation.getDate() + ",");
+            if(confrenceInformation.getConInfo().isEmpty()){ // no good models
+                print.println("            \"publications\": []");
+            }
+            else {
+                print.println("            \"publications\": [");
+                for (Model model: confrenceInformation.getConInfo()){
+                    print.println("                {");
+                    print.println("                    \"name\": " + model.getName() +",");
+                    print.println("                    \"data\": {");
+                    print.println("                        \"type\": " + model.getData().getType()+",");
+                    print.println("                        \"size\": " + model.getData().getSize());
+                    print.println("                    },");
+                    print.println("                    \"status\": " +model.getStatus() +",");
+                    print.println("                    \"results\": " +model.getResult());
+                    print.println("                }");
+                }
+                print.println("            ]");
+            }
+            print.println("        },");
+        }//end of conf
+        print.println("    ],");
 
+        //Help function
+        int cpuTime,gpuTime;
+        for(CPU cpu:CPUS){
+            cpuTime = cpuTime + cpu.getRunTime();
+        }
+        for(GPU gpu:GPUS){
+            gpuTime = gpuTime + gpu.getRunTime();
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
+        print.println("    \"cpuTimeUsed\": " + cpuTime + ",");
+        print.println("    \"gpuTimeUsed\": " + gpuTime + ",");
+        print.println("    \"batchesProcessed\": " + );
+        print.println("}");
+        //</editor-fold>
     }
 
     //helping methods to create all the objects

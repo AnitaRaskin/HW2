@@ -71,4 +71,7 @@ public class ConfrenceInformation {
     public int getTick(){
         return tick;
     }
+    public String getName(){
+        return name;
+    }
 }

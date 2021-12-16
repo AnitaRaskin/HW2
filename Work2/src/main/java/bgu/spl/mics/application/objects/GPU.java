@@ -197,5 +197,8 @@ public class GPU {
     public int getTicks(){
         return ticks;
     }
+    public int getRunTime(){
+        return runTime;
+    }
 
 }
