@@ -94,7 +94,7 @@ public class GPU {
      *      *        @post size() = @pre size() - 1
      */
     public void sendDataToPro(){
-        while(memoryLimitation > 0){//able to train dataBatch
+        while(Disk!=null && memoryLimitation > 0){//able to train dataBatch
             DataBatch db = Disk.remove();
             memoryLimitation--;
             cluster.takeDataToProc(db);
@@ -141,7 +141,7 @@ public class GPU {
      * @post: size() = VRAM
      *        @post size() = @pre size() - 1
      */
-    public void testBatch(){
+    public void testModel(){
         Student student = model.getStudent();
         if(student.getStatus() == Student.Degree.MSc){
             int random = (int)(Math.random()*10);

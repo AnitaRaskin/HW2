@@ -19,6 +19,7 @@ public class CPU {
     private Cluster cluster;
     private int tick;
     private int runTime=0;
+    private int dataBatchProcess = 0;
 
     public CPU(int cores){ //constructor
         this.cores = cores;
@@ -50,6 +51,7 @@ public class CPU {
             if (tick == processingTime(current.getType())) {
                 cluster.sendProcessedData(data.remove());
                 runTime += tick;
+                dataBatchProcess++;
                 tick = 0;
                 cluster.addCPU(this);
             }
@@ -116,6 +118,11 @@ public class CPU {
     public int getCoresNum(){
         return cores;
     }
+
+    public int getDataBatchProcess() {
+        return dataBatchProcess;
+    }
+
     public int getRunTime() {
         return runTime;
     }

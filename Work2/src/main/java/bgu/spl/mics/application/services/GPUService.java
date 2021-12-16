@@ -1,9 +1,10 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.Callback;
-import bgu.spl.mics.MicroService;
-import bgu.spl.mics.Terminated;
+import bgu.spl.mics.*;
 import bgu.spl.mics.application.objects.GPU;
+
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * GPU service is responsible for handling the
@@ -17,19 +18,66 @@ import bgu.spl.mics.application.objects.GPU;
 public class GPUService extends MicroService {
     //Fields
     private GPU gpu;
+    private Queue<TestModelEvent> testModelEventQueue;
+    private Queue<TrainModelEvent> trainModelEventQueue;
     private String name;
 
     public GPUService(GPU gpu) {
         super("GPUService");
         this.gpu = gpu;
+        testModelEventQueue = new LinkedList<>();
+        trainModelEventQueue = new LinkedList<>();
     }
 
+    /**
+     * this function test all the test events that are existed to this gpu
+     * and then assign the gpu with train model only if it's possible
+     */
+    private void updateTheEvent(){
+        while(testModelEventQueue != null){
+            TestModelEvent testModelEve = testModelEventQueue.poll();
+            gpu.updateModel(testModelEve.getModel());
+            gpu.testModel();
+            complete(testModelEve,testModelEve.getModel());
+            testModelEve.getModel().updateStatus();
+        }
+        if(trainModelEventQueue == null)
+            gpu.updateModel(null);
+        else{
+            TrainModelEvent trainModelEve = trainModelEventQueue.poll();
+            gpu.updateModel(trainModelEve.getModel());
+            gpu.splitDataToBatches();
+            gpu.sendDataToPro();
+            gpu.doTick();
+            trainModelEve.getModel().updateStatus();
+        }
+    }
     @Override
     protected void initialize() {
-        Callback<Terminated> terminatedGPU = terminated -> {
-            this.terminate();
-        };
-        callbackEvent.put(Terminated.class, terminatedGPU);
-
+        subscribeBroadcast(Terminated.class, (Terminated terminated)->{
+            terminate();
+        });
+        /**
+         * check if the gpu is in the middle of training model
+         * if yes only add him tick otherwise also change the model
+         * if there are no more available models he gives him null model
+         */
+        subscribeBroadcast(TickBroadcast.class,(TickBroadcast timeB)->{
+            if(gpu.getModel()==null){
+                updateTheEvent();
+            }
+            else {
+                if(gpu.getModel().getData().dataTrained()){
+                    updateTheEvent();
+                }
+                gpu.doTick();
+            }
+        });
+        subscribeEvent(TrainModelEvent.class,(TrainModelEvent trainModelEvent)->{
+            trainModelEventQueue.add(trainModelEvent);
+        });
+        subscribeEvent(TestModelEvent.class,(TestModelEvent testModelEven)->{
+            testModelEventQueue.add(testModelEven);
+        });
     }
 }

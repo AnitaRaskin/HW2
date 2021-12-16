@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * create the different instances of the objects, and run the system.
  * In the end, you should output a text file.
  */
-public class CRMSRunner {
+public class    CRMSRunner {
     public static void main(String[] args) {
 
         FileReader reader = null;
@@ -103,7 +103,7 @@ public class CRMSRunner {
                 Data data = new Data(mod.get("type").getAsString(), mod.get("size").getAsInt());
                 students[i].addModel(new Model(mod.get("name").getAsString(), data, students[i]));
             }
-        }
+                     }
     }
 
     public static GPU[] createGPUs(JsonArray gpus) {

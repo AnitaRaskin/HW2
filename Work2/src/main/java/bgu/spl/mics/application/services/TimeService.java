@@ -37,21 +37,22 @@ public class TimeService extends MicroService{
 	 */
 	private void broadcastTick(){
 		currentTime++;
-		TickBroadcast tickBroadcast;
+		Broadcast tickBroadcast;
 		if(currentTime>duration) {
-			tickBroadcast = new TickBroadcast(true);
+			tickBroadcast = new Terminated();
 			terminate();
 		}
 		else
-			tickBroadcast = new TickBroadcast(false);
+			tickBroadcast = new TickBroadcast();
 		messageBus.sendBroadcast(tickBroadcast);
 	}
 
 	@Override
 	protected void initialize() {
 		Timer timer = new Timer();
-		//TimerTask task = () -> { broadcastTick() };
-		//timer.schedule(task,speed,duration);
+		TimerTask task = (() -> broadcastTick());
+		timer.schedule(task,speed,duration);
+		terminate();
 	}
 
 }

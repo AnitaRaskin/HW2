@@ -168,6 +168,7 @@ public abstract class MicroService implements Runnable {
                 System.out.println("InterruptedException");
             }
         }
+        messageBus.unregister(this);
     }
 
 }
