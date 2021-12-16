@@ -42,12 +42,12 @@ public class Student {
         return modelQueue;
     }
 
-    public void setPublications(int publications){
-        this.publications = publications;
+    public void addPublications(int publications){
+        this.publications += publications;
     }
 
-    public void setPaperRead(int papersRead){
-        this.papersRead = papersRead;
+    public void addPaperRead(int papersRead){
+        this.papersRead += papersRead;
     }
 
     public int getPublications() {

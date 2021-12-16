@@ -20,6 +20,7 @@ public class GPUService extends MicroService {
     private GPU gpu;
     private Queue<TestModelEvent> testModelEventQueue;
     private Queue<TrainModelEvent> trainModelEventQueue;
+    private TrainModelEvent currentEV = null;
     private String name;
 
     public GPUService(GPU gpu) {
@@ -45,6 +46,7 @@ public class GPUService extends MicroService {
             gpu.updateModel(null);
         else{
             TrainModelEvent trainModelEve = trainModelEventQueue.poll();
+            currentEV = trainModelEve;
             gpu.updateModel(trainModelEve.getModel());
             gpu.splitDataToBatches();
             gpu.sendDataToPro();
@@ -68,6 +70,7 @@ public class GPUService extends MicroService {
             }
             else {
                 if(gpu.getModel().getData().dataTrained()){
+                    complete(currentEV,currentEV.getModel());
                     updateTheEvent();
                 }
                 gpu.doTick();

@@ -5,6 +5,7 @@ import bgu.spl.mics.application.objects.Model;
 import bgu.spl.mics.application.objects.Student;
 
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
@@ -18,9 +19,11 @@ import java.util.LinkedList;
 public class StudentService extends MicroService {
     private Student student;
     private MessageBus messageBus = MessageBusImpl.getInstance();
+    Future future;
     public StudentService(String name, Student student) {
         super("studentServiceOf:"+name);
         this.student = student;
+
     }
 
     @Override
@@ -40,15 +43,15 @@ public class StudentService extends MicroService {
             Model studentModel = student.getModelQueue().poll();
             if(studentModel.getStatus() == Model.Status.PreTrained){
                 TrainModelEvent trainEvent = new TrainModelEvent(studentModel);
-                sendEvent(trainEvent);
+                future = sendEvent(trainEvent);
             }
-            else if(studentModel.getStatus() == Model.Status.Trained){
+            else if(future.get(1, TimeUnit.NANOSECONDS)!=null && studentModel.getStatus() == Model.Status.Trained){
                 TestModelEvent testModelEvent = new TestModelEvent(studentModel);
-                sendEvent(testModelEvent);
+                future = sendEvent(testModelEvent);
             }
-            else if(studentModel.getStatus() == Model.Status.Tested) {
+            else if(future.get(1, TimeUnit.NANOSECONDS)!=null && studentModel.getStatus() == Model.Status.Tested) {
                 PublishResultsEvent publishReEve = new PublishResultsEvent(studentModel);
-                sendEvent(publishReEve);
+                future = sendEvent(publishReEve);
             }
             student.getModelQueue().add(studentModel);
         });
@@ -58,12 +61,13 @@ public class StudentService extends MicroService {
          */
         subscribeBroadcast(PublishConferenceBroadcast.class,(PublishConferenceBroadcast publishB)->{
             LinkedList<Model> confList = publishB.getConfrenceInformation().getConInfo();
-            student.setPaperRead(confList.size());
+            student.addPaperRead(confList.size());
             int publications = 0;
             for(Model model : confList){
                 if(student == model.getStudent())
                     publications++;
             }
         });
+
     }
 }
