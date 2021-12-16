@@ -5,6 +5,7 @@ import bgu.spl.mics.application.objects.*;
 import bgu.spl.mics.application.services.*;
 import com.google.gson.*;//IMPORT GSON -> CAN READ FILE TYPE GiSON
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -68,14 +69,17 @@ public class CRMSRunner {
 
         TimeService timeService = new TimeService(TickTime,Duration);
 
+        //output file
+        FileWriter writer = null;
         try {
-            PrintWriter a = new PrintWriter("./output.txt");
-            a.println();
-            a.close();
-        }catch (IOException e){
+            writer = new FileWriter("./output.txt");
+            writer.write("Students:\n");
+
+
+            writer.close();
+        } catch (IOException e) {
             System.out.println("IOException");
         }
-
     }
 
     //helping methods to create all the objects
