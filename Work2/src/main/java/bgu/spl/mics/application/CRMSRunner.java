@@ -4,10 +4,8 @@ import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.application.objects.*;
 import bgu.spl.mics.application.services.*;
 import com.google.gson.*;//IMPORT GSON -> CAN READ FILE TYPE GiSON
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+
+import java.io.*;
 import java.util.ArrayList;
 
 /** This is the Main class of Compute Resources Management System application. You should parse the input file,
@@ -15,7 +13,7 @@ import java.util.ArrayList;
  * In the end, you should output a text file.
  */
 public class    CRMSRunner {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         FileReader reader = null;
         try {
@@ -28,7 +26,7 @@ public class    CRMSRunner {
         //start taking all the info from gson
         JsonArray Jstudents = object.getAsJsonArray("Students");
         Student[] students = createStudents(Jstudents);
-        createModels(students, Jstudents);
+        Model[] models = createModels(students, Jstudents);
 
         JsonArray JGpus = object.getAsJsonArray("GPUS");
         GPU[] GPUS = createGPUs(JGpus);
@@ -63,23 +61,59 @@ public class    CRMSRunner {
             conferenceService.run();
         }
         for (int i = 0; i < students.length; i++) {
-            StudentService studentService = new StudentService(students[i].getName(),students[i]);
+            StudentService studentService = new StudentService(students[i].getName(), students[i]);
             studentService.run();
         }
 
-        TimeService timeService = new TimeService(TickTime,Duration);
+        TimeService timeService = new TimeService(TickTime, Duration);
 
         //output file
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter("./output.txt");
-            writer.write("Students:\n");
-
-
-            writer.close();
-        } catch (IOException e) {
-            System.out.println("IOException");
+        File file = new File("./output.txt");
+        FileWriter writer = new FileWriter(file);
+        PrintWriter print = new PrintWriter(writer);
+        print.println("{");
+        print.println("    \"students\": [");
+        print.println("        {");
+        for(Student student:students) {
+            print.println("            \"name\": " + student.getName() + ",");
+            print.println("            \"department\": " + student.getDepartment() + ",");
+            print.println("            \"status\": " + student.getStatus() + ",");
+            print.println("            \"publications\": " + student.getPublications() + ",");
+            print.println("            \"papersRead\": " + student.getPapersRead() + ",");
+            print.println("            \"trainedModels\": [");
+            for (Model model : models) {
+                print.println("                {");
+                print.println("                    \"name\": " + model.getName() + ",");
+                print.println("                    \"name\": " + model.getName() + ",");
+                print.println("                    \"data\": {");
+                print.println("                        \"type\": " + model.getData().getType() + ",");
+                print.println("                        \"size\": " + model.getData().getSize());
+                print.println("                    },");
+                print.println("                    \"status\": " + model.getStatus() + ",");
+                print.println("                    \"results\": " + model.getResult());
+                print.println("                },"); // check not everyone should get it!!!!!!!!!!!!!
+            }
+            print.println("        },");
         }
+        print.println("    ],"); //end of all the students
+        print.println("    \"conferences\": [");
+        for(ConfrenceInformation confrenceInformation:conferences){
+            print.println("    \"conferences\": [");
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
     //helping methods to create all the objects
@@ -93,17 +127,20 @@ public class    CRMSRunner {
         return Students;
     }
 
-    public static void createModels(Student[] students, JsonArray Jstudents) {
+    public static Model[] createModels(Student[] students, JsonArray Jstudents) {
         int size = Jstudents.size();
+        Model[] models = new Model[size];
         for (int i = 0; i < size; i++) {//students
             JsonObject student = Jstudents.get(i).getAsJsonObject();
             JsonArray model = student.getAsJsonArray("models"); //array of models
             for (int j = 0; j < model.size(); j++) { //run over all the models
                 JsonObject mod = model.get(j).getAsJsonObject();
                 Data data = new Data(mod.get("type").getAsString(), mod.get("size").getAsInt());
-                students[i].addModel(new Model(mod.get("name").getAsString(), data, students[i]));
+                models[i] = new Model(mod.get("name").getAsString(), data, students[i]);
+                students[i].addModel(models[i]);
             }
-                     }
+        }
+        return models;
     }
 
     public static GPU[] createGPUs(JsonArray gpus) {

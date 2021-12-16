@@ -52,4 +52,7 @@ public class Model {
     public Student getStudent(){
         return student;
     }
+    public String getName(){
+        return name;
+    }
 }

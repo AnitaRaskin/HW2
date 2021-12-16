@@ -26,7 +26,7 @@ public class Cluster {
 	/**
      * Retrieves the single instance of this class.
      */
-	public static Cluster getInstance() {
+	public static synchronized Cluster getInstance() {
 		//TODO: Implement this
 		if(thisCluster == null){
 			thisCluster = new Cluster();

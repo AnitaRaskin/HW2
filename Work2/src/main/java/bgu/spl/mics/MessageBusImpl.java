@@ -35,7 +35,7 @@ public class MessageBusImpl implements MessageBus {
 	 *
 	 * Retrieves the single instance of this class.
 	 */
-	public static MessageBus getInstance() {
+	public static synchronized MessageBus getInstance() {
 		if(thisMB == null){
 			thisMB = new MessageBusImpl();
 		}

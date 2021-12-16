@@ -61,4 +61,8 @@ public class Student {
     public Degree getStatus() {
         return status;
     }
+
+    public String getDepartment(){
+        return department;
+    }
 }
