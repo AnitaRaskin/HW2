@@ -37,7 +37,6 @@ public class TimeService extends MicroService{
 	 * otherwise we construct it with false parameter which it means to do regular tick
 	 */
 	private void broadcastTick(){
-		System.out.println(currentTime +" my print in class TimeService in fun broadcastTick");
 		currentTime++;
 		Broadcast tickBroadcast;
 		if(currentTime == duration) {
