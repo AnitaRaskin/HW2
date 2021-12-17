@@ -55,4 +55,7 @@ public class Model {
     public String getName(){
         return name;
     }
+    public Boolean toPublish(){
+        return Result.Good == result;
+    }
 }

@@ -12,9 +12,9 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class MessageBusImpl implements MessageBus {
 	//Fields
-	private HashMap<Class<? extends Event>, BlockingQueue<MicroService>> events_MS;
-	private HashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>> broadcasts_MS;
-	private HashMap<MicroService, BlockingQueue<Message>> microservice_queues;
+	private HashMap<Class<? extends Event>, BlockingQueue<MicroService>> hashMapEventWithMicroServices;
+	private HashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>> hashMapBroadcastWithMicroServices;
+	private HashMap<MicroService, BlockingQueue<Message>> hashMapMicroserviceWithMessage;
 	private HashMap<Event, Future> futureOfEvent;
 	private static MessageBus thisMB = null;
 	private static Object micro_queue = new Object();
@@ -23,9 +23,9 @@ public class MessageBusImpl implements MessageBus {
 
 	//Constructor
 	private MessageBusImpl(){ //check if this is a method
-		events_MS = new HashMap<Class<? extends Event>, BlockingQueue<MicroService>>();
-		broadcasts_MS = new HashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>>();
-		microservice_queues = new HashMap<MicroService, BlockingQueue<Message>>();
+		hashMapEventWithMicroServices = new HashMap<Class<? extends Event>, BlockingQueue<MicroService>>();
+		hashMapBroadcastWithMicroServices = new HashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>>();
+		hashMapMicroserviceWithMessage = new HashMap<MicroService, BlockingQueue<Message>>();
 		futureOfEvent = new HashMap<Event, Future>();
 	}
 
@@ -50,23 +50,23 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-		BlockingQueue<MicroService> queueMS;
+		BlockingQueue<MicroService> microServicesOfEvent;
 		boolean found = false;
-		if(!events_MS.containsKey(type)){
-			queueMS = new LinkedBlockingQueue<MicroService>();
+		if(!hashMapEventWithMicroServices.containsKey(type)){
+			microServicesOfEvent = new LinkedBlockingQueue<MicroService>();
 		}
 		else{ //type exists
-			queueMS = events_MS.get(type); //get()->return the value of this key
+			microServicesOfEvent = hashMapEventWithMicroServices.get(type); //get()->return the value of this key
 			//check if MS is already subscribed
-			for(MicroService ms: queueMS){
+			for(MicroService ms: microServicesOfEvent){
 				if(ms == m){
 					found = true; //I do not want to enter m twice
 				}
 			}
 		}
 		if(!found){
-			queueMS.add(m);
-			events_MS.put(type,queueMS);//put() -> if type exists it will only change the value of the key
+			microServicesOfEvent.add(m);
+			hashMapEventWithMicroServices.put(type,microServicesOfEvent);//put() -> if type exists it will only change the value of the key
 			//         else create a new one and add the key and the value
 		}
 	}
@@ -80,23 +80,23 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-		if(microservice_queues.containsKey(m)){ // m is registered
-			BlockingQueue<MicroService> queueMS;
+		if(hashMapMicroserviceWithMessage.containsKey(m)){ // m is registered
+			BlockingQueue<MicroService> microServicesOfBroad;
 			boolean found = false;
-			if( !broadcasts_MS.containsKey(type)){
-				queueMS = new LinkedBlockingQueue<MicroService>();
+			if( !hashMapBroadcastWithMicroServices.containsKey(type)){
+				microServicesOfBroad = new LinkedBlockingQueue<MicroService>();
 			}
 			else{ //type exists
-				queueMS = broadcasts_MS.get(type); //get()->return the value of this key
-				for(MicroService ms: queueMS){
+				microServicesOfBroad = hashMapBroadcastWithMicroServices.get(type); //get()->return the value of this key
+				for(MicroService ms: microServicesOfBroad){
 					if(ms == m){
 						found = true; //I do not want to enter m twice
 					}
 				}
 			}
 			if(!found){
-				queueMS.add(m);
-				broadcasts_MS.put(type,queueMS); //put() -> if type exists it will only change the value of the key
+				microServicesOfBroad.add(m);
+				hashMapBroadcastWithMicroServices.put(type,microServicesOfBroad); //put() -> if type exists it will only change the value of the key
 				//         else create a new one and add the key and the value
 			}
 		}
@@ -128,9 +128,9 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override //->tick reg only after this register
 	public void register(MicroService m) {
-		synchronized (this){
+		synchronized (hashMapMicroserviceWithMessage){
 			BlockingQueue<Message> mes = new LinkedBlockingQueue <Message>();
-			microservice_queues.put(m, mes);
+			hashMapMicroserviceWithMessage.put(m, mes);
 		}
 	}
 
@@ -141,21 +141,21 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public void unregister(MicroService m) {
-		if(microservice_queues.containsKey(m)){ //registered
+		if(hashMapMicroserviceWithMessage.containsKey(m)){ //registered
 			m.terminate();
 			//remove from all the hash maps
 			//microservice
 			synchronized (this) {
-				microservice_queues.remove(m);
+				hashMapMicroserviceWithMessage.remove(m);
 				//System.out.println(microservice_queues.get(m));
 				//events
-				for(BlockingQueue block:events_MS.values()){
+				for(BlockingQueue block:hashMapEventWithMicroServices.values()){
 					if(block!=null)
 						block.remove(m);
 				}
 				//while(events_MS.values().remove(m));
 				//broadcast
-				for(BlockingQueue block:broadcasts_MS.values()){
+				for(BlockingQueue block:hashMapBroadcastWithMicroServices.values()){
 					if(block!=null)
 						block.remove(m);
 				}
@@ -174,15 +174,15 @@ public class MessageBusImpl implements MessageBus {
 	@Override
 	public void sendBroadcast(Broadcast b) {
 		synchronized (lockBtAwaitSen) {
-			if (!broadcasts_MS.isEmpty()) {
-				if (broadcasts_MS.get(b.getClass()) != null) {
-					BlockingQueue<MicroService> microServicesOFb = broadcasts_MS.get(b.getClass());
-					for (MicroService ms : microServicesOFb) {
-						BlockingQueue<Message> help = microservice_queues.get(ms);
-//					if(help==null)
-//						System.out.println(ms.getName());
-						help.add(b);
-						microservice_queues.put(ms, help);
+			if (!hashMapBroadcastWithMicroServices.isEmpty()) {
+				if (hashMapBroadcastWithMicroServices.get(b.getClass()) != null) {
+					BlockingQueue<MicroService> microServicesOfBroadcast = hashMapBroadcastWithMicroServices.get(b.getClass());
+					for (MicroService microService : microServicesOfBroadcast) {
+						synchronized (hashMapMicroserviceWithMessage.get(microService)) {
+							BlockingQueue<Message> messageOfThisMicroService = hashMapMicroserviceWithMessage.get(microService);
+							messageOfThisMicroService.add(b);
+							hashMapMicroserviceWithMessage.put(microService, messageOfThisMicroService);
+						}
 					}
 					synchronized (this) {
 						this.notifyAll();
@@ -203,18 +203,18 @@ public class MessageBusImpl implements MessageBus {
 	@Override
 	public <T> Future<T> sendEvent(Event<T> e) {
 		Future<T> ev_future = new Future<T>();
-		if (!events_MS.isEmpty()) {
+		if (!hashMapEventWithMicroServices.isEmpty()) {
 			futureOfEvent.put(e, ev_future);
-			if (events_MS.get(e.getClass()) != null) {
-				synchronized (events_MS.get(e.getClass())) {
-					BlockingQueue<MicroService> microServicesOFe = events_MS.get(e.getClass());
-					MicroService first = microServicesOFe.poll();
-					if (first != null) {
-						BlockingQueue<Message> first_Messages = microservice_queues.get(first);
-						first_Messages.add(e);
-						microservice_queues.put(first, first_Messages);
-						microServicesOFe.add(first);
-						events_MS.put(e.getClass(), microServicesOFe);
+			if (hashMapEventWithMicroServices.get(e.getClass()) != null) {
+				synchronized (hashMapEventWithMicroServices.get(e.getClass())) {
+					BlockingQueue<MicroService> microServicesOFe = hashMapEventWithMicroServices.get(e.getClass());
+					MicroService firstMicroservice = microServicesOFe.poll();
+					if (firstMicroservice != null) {
+						BlockingQueue<Message> MessagesOfFirst = hashMapMicroserviceWithMessage.get(firstMicroservice);
+						MessagesOfFirst.add(e);
+						hashMapMicroserviceWithMessage.put(firstMicroservice, MessagesOfFirst);
+						microServicesOFe.add(firstMicroservice);
+						hashMapEventWithMicroServices.put(e.getClass(), microServicesOFe);
 					}
 				}
 			}
@@ -233,24 +233,8 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public Message awaitMessage(MicroService m) throws InterruptedException {
-		return microservice_queues.get(m).take();
+		return hashMapMicroserviceWithMessage.get(m).take();
 	}
-		/*
-//		BlockingQueue<Message> ms = microservice_queues.get(m);
-//		synchronized (microservice_queues.get(m)) {
-//			while (ms.isEmpty()) {
-//				try {
-//					microservice_queues.get(m).wait();
-//				} catch (InterruptedException e) {
-//					System.out.
-//
-//					println("InterruptedException");
-//				}
-//			}
-//			return (microservice_queues.get(m).poll());
-//		}
-	}*/
-
 
 	/**
 	 *
@@ -258,7 +242,7 @@ public class MessageBusImpl implements MessageBus {
 	 * @return True or False
 	 */
 	public <T> boolean microserviceInEvents(Class<? extends Event<T>> type, MicroService m){
-		BlockingQueue<MicroService> microServicesOFe= events_MS.get(type);
+		BlockingQueue<MicroService> microServicesOFe= hashMapEventWithMicroServices.get(type);
 		return (microServicesOFe.contains(m));
 	}
 
@@ -268,7 +252,7 @@ public class MessageBusImpl implements MessageBus {
 	 * @return True or False
 	 */
 	public boolean microserviceInBroadcasts(Class<? extends Broadcast> type, MicroService m){
-		BlockingQueue<MicroService> microServicesOFb= broadcasts_MS.get(type);
+		BlockingQueue<MicroService> microServicesOFb= hashMapBroadcastWithMicroServices.get(type);
 		return (microServicesOFb.contains(m));
 	}
 
@@ -291,7 +275,7 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	public boolean sucSendBroadcast(Message b, MicroService m){
 		boolean found = false;
-		BlockingQueue<Message> microserviceB = microservice_queues.get(m);
+		BlockingQueue<Message> microserviceB = hashMapMicroserviceWithMessage.get(m);
 		for(Message ms: microserviceB){
 			if(ms == b){
 				found = true;
@@ -307,7 +291,7 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	public boolean sucSendEvent(Message e, MicroService m){
 		boolean found = false;
-		BlockingQueue<Message> microserviceE = microservice_queues.get(m);
+		BlockingQueue<Message> microserviceE = hashMapMicroserviceWithMessage.get(m);
 		for(Message ms: microserviceE){
 			if(ms == e){
 				found = true;
@@ -323,7 +307,7 @@ public class MessageBusImpl implements MessageBus {
 	 * @return Boolean - true, false
 	 */
 	public boolean isMicroServiceRegistered(MicroService m){
-		return (microservice_queues.containsKey(m));
+		return (hashMapMicroserviceWithMessage.containsKey(m));
 	}
 
 	/**

@@ -90,7 +90,7 @@ public class StudentService extends MicroService {
             student.addPaperRead(confList.size());
             int publications = 0;
             for(Model model : confList){
-                if(student == model.getStudent())
+                if(student.equals(model.getStudent()))
                     publications++;
             }
             student.addPublications(publications);
