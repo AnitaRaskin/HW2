@@ -41,7 +41,7 @@ public class TimeService extends MicroService{
 		currentTime++;
 		Broadcast tickBroadcast;
 		if(currentTime == duration) {
-			sendBroadcast(new Terminated());
+			sendBroadcast(new TerminateBroadcast());
 			timer.cancel();
 		}
 		else {
@@ -53,7 +53,7 @@ public class TimeService extends MicroService{
 
 	@Override
 	protected void initialize() {
-		subscribeBroadcast(Terminated.class, (terminate) -> this.terminate());
+		subscribeBroadcast(TerminateBroadcast.class, (terminate) -> this.terminate());
 		TimerTask task = new TimerTask() {
 			public void run() {
 				broadcastTick();

@@ -21,7 +21,7 @@ public class CPUService extends MicroService {
 
     @Override
     protected void initialize() {
-        subscribeBroadcast(Terminated.class, (terminate) -> {
+        subscribeBroadcast(TerminateBroadcast.class, (terminate) -> {
             this.terminate();});
 
         subscribeBroadcast(TickBroadcast.class, (tick) -> this.cpu.updateTime());

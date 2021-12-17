@@ -5,7 +5,6 @@ import bgu.spl.mics.application.objects.Model;
 import bgu.spl.mics.application.objects.Student;
 
 import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
@@ -38,7 +37,7 @@ public class StudentService extends MicroService {
      */
     @Override
     protected void initialize() {
-        subscribeBroadcast(Terminated.class, (terminate)-> terminate());
+        subscribeBroadcast(TerminateBroadcast.class, (terminate)-> terminate());
 
         /**
          *  for every tick send the proper event for the first cell in the Queue and then return it to the Queue

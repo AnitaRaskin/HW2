@@ -35,11 +35,11 @@ public class GPUService extends MicroService {
      * and then assign the gpu with train model only if it's possible
      */
     private void updateTheEvent(){
-        while(testModelEventQueue != null){ //COULD STACK ALL THE PROGRAM
+        while(testModelEventQueue.size() != 0){ //COULD STACK ALL THE PROGRAM
             TestModelEvent testModelEve = testModelEventQueue.poll();
             gpu.updateModel(testModelEve.getModel());
             gpu.testModel();
-            complete(testModelEve,testModelEve.getModel());
+            complete(testModelEve, testModelEve.getModel());
             testModelEve.getModel().updateStatus();
         }
         if(trainModelEventQueue == null){
@@ -57,7 +57,7 @@ public class GPUService extends MicroService {
     }
     @Override
     protected void initialize() {
-        subscribeBroadcast(Terminated.class, (Terminated terminated)->terminate());
+        subscribeBroadcast(TerminateBroadcast.class, (TerminateBroadcast terminated)->terminate());
         /**
          * check if the gpu is in the middle of training model
          * if yes only add him tick otherwise also change the model

@@ -25,7 +25,7 @@ public class ConferenceService extends MicroService {
     @Override
     protected void initialize() {
         //basic subscribe - terminate and tickBroadcast
-        subscribeBroadcast(Terminated.class, (terminate) -> this.terminate());
+        subscribeBroadcast(TerminateBroadcast.class, (terminate) -> this.terminate());
         subscribeBroadcast(TickBroadcast.class, (tick) -> {
             this.confrenceInformation.doTick();
             /**

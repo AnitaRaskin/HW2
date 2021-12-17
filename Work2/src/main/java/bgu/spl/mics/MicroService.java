@@ -160,7 +160,7 @@ public abstract class MicroService implements Runnable {
     @Override
     public final void run() {
         messageBus.register(this);
-        subscribeBroadcast(Terminated.class, (c) -> terminate());
+        subscribeBroadcast(TerminateBroadcast.class, (c) -> terminate());
         initialize();
         while (!terminated) {
             try {
