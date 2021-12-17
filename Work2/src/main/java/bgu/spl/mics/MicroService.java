@@ -164,10 +164,9 @@ public abstract class MicroService implements Runnable {
         initialize();
         while (!terminated) {
             try {
-                System.out.println("before await - Ms fun run");
                 Message message = messageBus.awaitMessage(this);
-                System.out.println("after wait - Ms func run");
-                if(callbackEvent.get(message) != null){
+                if(callbackEvent.get(message.getClass()) != null){
+                    System.out.println("call for a message MS func run");
                     callbackEvent.get(message).call(message);
                 }
             } catch (InterruptedException e) {

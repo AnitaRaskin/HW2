@@ -162,27 +162,15 @@ public class MessageBusImpl implements MessageBus {
 	@Override
 	public void sendBroadcast(Broadcast b) {
 		if(!broadcasts_MS.isEmpty()){
-			System.out.println("BC is not empty-got till here");
-			System.out.println(broadcasts_MS.get(b.getClass()));
 			if(broadcasts_MS.get(b.getClass()) != null) {
-				System.out.println("BC.get is not empty");
 				BlockingQueue<MicroService> microServicesOFb = broadcasts_MS.get(b.getClass());
-				System.out.println("2 line");
 				for (MicroService ms : microServicesOFb) {
-					System.out.println("3 line");
-
 					BlockingQueue<Message> help = microservice_queues.get(ms);
-					System.out.println("4 line");
-
 					help.add(b);
-					System.out.println(b);
-					System.out.println(microservice_queues.get(ms).size());
 					microservice_queues.put(ms,help);
-					System.out.println(microservice_queues.get(ms).size());
 				}
 				synchronized (this) {
 					this.notifyAll();
-					System.out.println("they are awake");
 				}
 			}
 		}
