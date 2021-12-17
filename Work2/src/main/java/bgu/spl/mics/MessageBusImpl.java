@@ -1,5 +1,7 @@
 package bgu.spl.mics;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -144,10 +146,19 @@ public class MessageBusImpl implements MessageBus {
 				//microservice
 			synchronized (this) {
 				microservice_queues.remove(m);
+				//System.out.println(microservice_queues.get(m));
 				//events
-				while(events_MS.values().remove(m));
+				for(BlockingQueue block:events_MS.values()){
+					if(block!=null)
+						block.remove(m);
+				}
+				//while(events_MS.values().remove(m));
 				//broadcast
-				while(broadcasts_MS.values().remove(m));
+				for(BlockingQueue block:broadcasts_MS.values()){
+					if(block!=null)
+						block.remove(m);
+				}
+				//while(broadcasts_MS.values().remove(m));
 			}
 		}
 	}
@@ -166,6 +177,8 @@ public class MessageBusImpl implements MessageBus {
 				BlockingQueue<MicroService> microServicesOFb = broadcasts_MS.get(b.getClass());
 				for (MicroService ms : microServicesOFb) {
 					BlockingQueue<Message> help = microservice_queues.get(ms);
+//					if(help==null)
+//						System.out.println(ms.getName());
 					help.add(b);
 					microservice_queues.put(ms,help);
 				}

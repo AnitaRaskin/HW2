@@ -37,6 +37,7 @@ public class ConferenceService extends MicroService {
              */
             if(confrenceInformation.getTick() == confrenceInformation.getDate()){
                 sendBroadcast(new PublishConferenceBroadcast(confrenceInformation));
+                MessageBusImpl.getInstance().unregister(this);
                 terminate();
             }
         });
