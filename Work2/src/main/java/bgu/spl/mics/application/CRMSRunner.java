@@ -102,7 +102,6 @@ public class CRMSRunner {
             print.println("            \"papersRead\": " + student.getPapersRead() + ",");
             print.println("            \"trainedModels\": [");
             for (Model model : student.getModelQueue()) {
-                System.out.println(student);
                     print.println("                {");
                     print.println("                    \"name\": " + model.getName() + ",");
                     print.println("                    \"data\": {");
