@@ -14,148 +14,148 @@ import java.util.LinkedList;
 public class CRMSRunner {
     public static void main(String[] args) throws IOException {
 
-            //<editor-fold desc="input-file>
-            FileReader reader = null;
-            try {
-                reader = new FileReader(args[0]);
-            } catch (IOException e) {
-                System.out.println("Exception"); //Not found/ not good file
-                System.exit(0);//exit - do not have a file empty
-            }
-            JsonObject object = JsonParser.parseReader(reader).getAsJsonObject();
+        //<editor-fold desc="input-file>
+        FileReader reader = null;
+        try {
+            reader = new FileReader(args[0]);
+        } catch (IOException e) {
+            System.out.println("Exception"); //Not found/ not good file
+            System.exit(0);//exit - do not have a file empty
+        }
+        JsonObject object = JsonParser.parseReader(reader).getAsJsonObject();
 
-            //start taking all the info from gson
-            JsonArray JsonStudents = object.getAsJsonArray("Students");
-            Student[] students = createStudents(JsonStudents);
-            Model[] models = createModels(students, JsonStudents);
+        //start taking all the info from gson
+        JsonArray JsonStudents = object.getAsJsonArray("Students");
+        Student[] students = createStudents(JsonStudents);
+        Model[] models = createModels(students, JsonStudents);
 
-            JsonArray JGpus = object.getAsJsonArray("GPUS");
-            GPU[] GPUS = createGPUs(JGpus);
+        JsonArray JGpus = object.getAsJsonArray("GPUS");
+        GPU[] GPUS = createGPUs(JGpus);
 
-            JsonArray JCpus = object.getAsJsonArray("CPUS");
-            CPU[] CPUS = createCPUs(JCpus);
+        JsonArray JCpus = object.getAsJsonArray("CPUS");
+        CPU[] CPUS = createCPUs(JCpus);
 
-            JsonArray JConferences = object.getAsJsonArray("Conferences");
-            ConfrenceInformation[] conferences = createConferences(JConferences);
+        JsonArray JConferences = object.getAsJsonArray("Conferences");
+        ConfrenceInformation[] conferences = createConferences(JConferences);
 
-            int TickTime = object.get("TickTime").getAsInt();
-            int Duration = object.get("Duration").getAsInt();
+        int TickTime = object.get("TickTime").getAsInt();
+        int Duration = object.get("Duration").getAsInt();
 
-            //create cluster & messageBus -> singleton
-            Cluster cluster = Cluster.getInstance();
-            MessageBus messageBus = MessageBusImpl.getInstance();
+        //create cluster & messageBus -> singleton
+        Cluster cluster = Cluster.getInstance();
+        MessageBus messageBus = MessageBusImpl.getInstance();
         LinkedList<Thread> threads=new LinkedList<>();
 
-            //create all the services
-            for(CPU cpu:CPUS){
-                cluster.addCPU(cpu);
-                CPUService cpuService = new CPUService(cpu);
-                Thread t = new Thread(cpuService);
-                t.start();
-                threads.add(t);
-            }
-            for(GPU gpu:GPUS){
-                cluster.addGPU(gpu);
-                GPUService gpuService = new GPUService(gpu);
-                Thread t = new Thread(gpuService);
-                t.start();
-                threads.add(t);
-            }
-            for(ConfrenceInformation confrenceInformation:conferences){
-                ConferenceService conferenceService = new ConferenceService(confrenceInformation);
-                Thread t = new Thread(conferenceService);
-                t.start();
-                threads.add(t);
-            }
-            for(Student student:students){
-                StudentService studentService = new StudentService(student.getName(), student);
-                Thread t = new Thread(studentService);
-                t.start();
-                threads.add(t);
-            }
-            TimeService timeService = new TimeService(TickTime, Duration);
-            Thread thread = new Thread(timeService);
-            thread.start();
+        //create all the services
+        for(Student student:students){
+            StudentService studentService = new StudentService(student.getName(), student);
+            Thread t = new Thread(studentService);
+            t.start();
+            threads.add(t);
+        }
+        for(CPU cpu:CPUS){
+            cluster.addCPU(cpu);
+            CPUService cpuService = new CPUService(cpu);
+            Thread t = new Thread(cpuService);
+            t.start();
+            threads.add(t);
+        }
+        for(GPU gpu:GPUS){
+            cluster.addGPU(gpu);
+            GPUService gpuService = new GPUService(gpu);
+            Thread t = new Thread(gpuService);
+            t.start();
+            threads.add(t);
+        }
+        for(ConfrenceInformation confrenceInformation:conferences){
+            ConferenceService conferenceService = new ConferenceService(confrenceInformation);
+            Thread t = new Thread(conferenceService);
+            t.start();
+            threads.add(t);
+        }
+
+        TimeService timeService = new TimeService(TickTime, Duration);
+        Thread thread = new Thread(timeService);
+        thread.start();
         threads.add(thread);
 
         for(Thread t: threads){
             try {
-                t.join();
+                t.join(); //do all the lines until here before keep going with the program
             } catch (InterruptedException ignored){}
         }
 
-            //</editor-fold>
+        //</editor-fold>
 
-            //<editor-fold desc="output-file>
-            File file = new File("./output.txt");
-            FileWriter writer = new FileWriter(file);
-            PrintWriter print = new PrintWriter(writer);
-            print.println("{");
-            print.println("    \"students\": [");
+        //<editor-fold desc="output-file>
+        File file = new File("./output.txt");
+        FileWriter writer = new FileWriter(file);
+        PrintWriter print = new PrintWriter(writer);
+        print.println("{");
+        print.println("    \"students\": [");
+        print.println("        {");
+        for(Student student:students) {
+            print.println("            \"name\": " + student.getName() + ",");
+            print.println("            \"department\": " + student.getDepartment() + ",");
+            print.println("            \"status\": " + student.getStatus() + ",");
+            print.println("            \"publications\": " + student.getPublications() + ",");
+            print.println("            \"papersRead\": " + student.getPapersRead() + ",");
+            print.println("            \"trainedModels\": [");
+            for (Model model : models) {
+                print.println("                {");
+                print.println("                    \"name\": " + model.getName() + ",");
+                print.println("                    \"name\": " + model.getName() + ",");
+                print.println("                    \"data\": {");
+                print.println("                        \"type\": " + model.getData().getType() + ",");
+                print.println("                        \"size\": " + model.getData().getSize());
+                print.println("                    },");
+                print.println("                    \"status\": " + model.getStatus() + ",");
+                print.println("                    \"results\": " + model.getResult());
+                print.println("                },"); // check not everyone should get it!!!!!!!!!!!!!
+            }
+            print.println("        },");
+        }
+        print.println("    ],"); //end of all the students
+        print.print("    \"conferences\": [");
+        for(ConfrenceInformation confrenceInformation:conferences) {
             print.println("        {");
-            for(Student student:students) {
-                print.println("            \"name\": " + student.getName() + ",");
-                print.println("            \"department\": " + student.getDepartment() + ",");
-                print.println("            \"status\": " + student.getStatus() + ",");
-                print.println("            \"publications\": " + student.getPublications() + ",");
-                print.println("            \"papersRead\": " + student.getPapersRead() + ",");
-                print.println("            \"trainedModels\": [");
-                for (Model model : models) {
+            print.println("            \"name\": " + confrenceInformation.getName() + ",");
+            print.println("            \"date\": " + confrenceInformation.getDate() + ",");
+            if(confrenceInformation.getConInfo().isEmpty()){ // no good models
+                print.println("            \"publications\": []");
+            }
+            else {
+                print.println("            \"publications\": [");
+                for (Model model: confrenceInformation.getConInfo()){
                     print.println("                {");
-                    print.println("                    \"name\": " + model.getName() + ",");
-                    print.println("                    \"name\": " + model.getName() + ",");
+                    print.println("                    \"name\": " + model.getName() +",");
                     print.println("                    \"data\": {");
-                    print.println("                        \"type\": " + model.getData().getType() + ",");
+                    print.println("                        \"type\": " + model.getData().getType()+",");
                     print.println("                        \"size\": " + model.getData().getSize());
                     print.println("                    },");
-                    print.println("                    \"status\": " + model.getStatus() + ",");
-                    print.println("                    \"results\": " + model.getResult());
-                    print.println("                },"); // check not everyone should get it!!!!!!!!!!!!!
+                    print.println("                    \"status\": " +model.getStatus() +",");
+                    print.println("                    \"results\": " +model.getResult());
+                    print.println("                }");
                 }
-                print.println("        },");
+                print.println("            ]");
             }
-            print.println("    ],"); //end of all the students
-            print.print("    \"conferences\": [");
-            for(ConfrenceInformation confrenceInformation:conferences) {
-                print.println("        {");
-                print.println("            \"name\": " + confrenceInformation.getName() + ",");
-                print.println("            \"date\": " + confrenceInformation.getDate() + ",");
-                if(confrenceInformation.getConInfo().isEmpty()){ // no good models
-                    print.println("            \"publications\": []");
-                }
-                else {
-                    print.println("            \"publications\": [");
-                    for (Model model: confrenceInformation.getConInfo()){
-                        print.println("                {");
-                        print.println("                    \"name\": " + model.getName() +",");
-                        print.println("                    \"data\": {");
-                        print.println("                        \"type\": " + model.getData().getType()+",");
-                        print.println("                        \"size\": " + model.getData().getSize());
-                        print.println("                    },");
-                        print.println("                    \"status\": " +model.getStatus() +",");
-                        print.println("                    \"results\": " +model.getResult());
-                        print.println("                }");
-                    }
-                    print.println("            ]");
-                }
-                print.println("        },");
-            }//end of conf
-            print.println("    ],");
+            print.println("        },");
+        }//end of conf
+        print.println("    ],");
+        //Help function
+        int cpuTime=0,gpuTime = 0;
+        for(CPU cpu:CPUS){
+            cpuTime = cpuTime + cpu.getRunTime();
+        }
+        for(GPU gpu:GPUS){
+            gpuTime = gpuTime + gpu.getRunTime();
+        }
 
-            //Help function
-            int cpuTime=0,gpuTime = 0;
-            for(CPU cpu:CPUS){
-                cpuTime = cpuTime + cpu.getRunTime();
-            }
-            for(GPU gpu:GPUS){
-                gpuTime = gpuTime + gpu.getRunTime();
-            }
-
-            print.println("    \"cpuTimeUsed\": " + cpuTime + ",");
-            print.println("    \"gpuTimeUsed\": " + gpuTime + ",");
-            print.println("    \"batchesProcessed\": " +cluster.getDataBatchSize() );
-            print.println("}");
-            //</editor-fold>
+        print.println("    \"cpuTimeUsed\": " + cpuTime + ",");
+        print.println("    \"gpuTimeUsed\": " + gpuTime + ",");
+        print.println("    \"batchesProcessed\": " +cluster.getDataBatchSize() );
+        print.println("}");
+        //</editor-fold>
     }
 
     //helping methods to create all the objects

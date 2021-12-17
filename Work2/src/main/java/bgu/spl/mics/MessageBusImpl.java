@@ -1,12 +1,7 @@
 package bgu.spl.mics;
-import bgu.spl.mics.application.objects.Cluster;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-// to all MS we need to write a callback
-//Callback <Type message-class> nameofcallback = input name(going to be type of message-Broad or Eve) -> {
-//body of callback
-//};
 
 
 /**
@@ -25,10 +20,10 @@ public class MessageBusImpl implements MessageBus {
 
 	//Constructor
 	private MessageBusImpl(){ //check if this is a method
-		events_MS = new HashMap();
-		broadcasts_MS = new HashMap();
-		microservice_queues = new HashMap();
-		futureOfEvent = new HashMap();
+		events_MS = new HashMap<Class<? extends Event>, BlockingQueue<MicroService>>();
+		broadcasts_MS = new HashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>>();
+		microservice_queues = new HashMap<MicroService, BlockingQueue<Message>>();
+		futureOfEvent = new HashMap<Event, Future>();
 	}
 
 	/**
@@ -53,7 +48,7 @@ public class MessageBusImpl implements MessageBus {
 	@Override
 	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
 		BlockingQueue<MicroService> queueMS;
-		Boolean found = false;
+		boolean found = false;
 		if(!events_MS.containsKey(type)){
 			queueMS = new LinkedBlockingQueue<MicroService>();
 		}
@@ -84,8 +79,8 @@ public class MessageBusImpl implements MessageBus {
 	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
 		if(microservice_queues.containsKey(m)){ // m is registered
 			BlockingQueue<MicroService> queueMS;
-			Boolean found = false;
-			if(!broadcasts_MS.containsKey(type)){
+			boolean found = false;
+			if( !broadcasts_MS.containsKey(type)){
 				queueMS = new LinkedBlockingQueue<MicroService>();
 			}
 			else{ //type exists
@@ -123,14 +118,14 @@ public class MessageBusImpl implements MessageBus {
 
 	/**
 	 *
-	 * creates a new MS->creats a new queue for him and add him into the hash of MS_queue
+	 * creates a new MS->creates a new queue for him and add him into the hash of MS_queue
 	 * @param m the microservice to create a queue for.
 	 * @pre:  None
 	 * @post: microservice_queue.containsKey(m) == true
 	 */
 	@Override //->tick reg only after this register
 	public void register(MicroService m) {
-		synchronized (micro_queue){
+		synchronized (this){
 			BlockingQueue<Message> mes = new LinkedBlockingQueue <Message>();
 			microservice_queues.put(m, mes);
 		}
@@ -147,7 +142,7 @@ public class MessageBusImpl implements MessageBus {
 			m.terminate();
 				//remove from all the hash maps
 				//microservice
-			synchronized (micro_queue) {
+			synchronized (this) {
 				microservice_queues.remove(m);
 				//events
 				while(events_MS.values().remove(m));
@@ -166,17 +161,32 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public void sendBroadcast(Broadcast b) {
-		if(broadcasts_MS.get(b) != null) {
-			BlockingQueue<MicroService> microServicesOFb = broadcasts_MS.get(b.getClass());
-			for (MicroService ms : microServicesOFb) {
-				BlockingQueue<Message> help = microservice_queues.get(ms);
-				help.add(b);
-				microservice_queues.put(ms,help);
-			}
-			synchronized (microservice_queues) {
-				microservice_queues.notifyAll();
+		if(!broadcasts_MS.isEmpty()){
+			System.out.println("BC is not empty-got till here");
+			System.out.println(broadcasts_MS.get(b.getClass()));
+			if(broadcasts_MS.get(b.getClass()) != null) {
+				System.out.println("BC.get is not empty");
+				BlockingQueue<MicroService> microServicesOFb = broadcasts_MS.get(b.getClass());
+				System.out.println("2 line");
+				for (MicroService ms : microServicesOFb) {
+					System.out.println("3 line");
+
+					BlockingQueue<Message> help = microservice_queues.get(ms);
+					System.out.println("4 line");
+
+					help.add(b);
+					System.out.println(b);
+					System.out.println(microservice_queues.get(ms).size());
+					microservice_queues.put(ms,help);
+					System.out.println(microservice_queues.get(ms).size());
+				}
+				synchronized (this) {
+					this.notifyAll();
+					System.out.println("they are awake");
+				}
 			}
 		}
+
 	}
 
 	/**
@@ -189,19 +199,21 @@ public class MessageBusImpl implements MessageBus {
 	@Override
 	public <T> Future<T> sendEvent(Event<T> e) {
 		Future<T> ev_future = new Future<T>();
-		futureOfEvent.put(e, ev_future);
-		if(events_MS.get(e) != null){
-			BlockingQueue<MicroService> microServicesOFe= events_MS.get(e.getClass());
-			MicroService first = microServicesOFe.poll();
-			if(first != null){
-				BlockingQueue<Message> reallyHelp = microservice_queues.get(first);
-				reallyHelp.add(e);
-				microservice_queues.put(first,reallyHelp);
-				microServicesOFe.add(first);
-			}
+		if(!events_MS.isEmpty()){
+			futureOfEvent.put(e, ev_future);
+			if(events_MS.get(e.getClass()) != null){
+				BlockingQueue<MicroService> microServicesOFe= events_MS.get(e.getClass());
+				MicroService first = microServicesOFe.poll();
+				if(first != null){
+					BlockingQueue<Message> reallyHelp = microservice_queues.get(first);
+					reallyHelp.add(e);
+					microservice_queues.put(first,reallyHelp);
+					microServicesOFe.add(first);
+				}
 
-			synchronized (microservice_queues) {
-				microservice_queues.notifyAll();
+				synchronized (this) {
+					this.notifyAll();
+				}
 			}
 		}
 		return ev_future;
@@ -212,32 +224,31 @@ public class MessageBusImpl implements MessageBus {
 	 *
 	 * @param m The microservice requesting to take a message from its message queue.
 	 *
-	 * @return
-	 * @throws InterruptedException
 	 */
 	@Override
 	public Message awaitMessage(MicroService m) throws InterruptedException {
 		return microservice_queues.get(m).take();
-
+	}
+		/*
 //		BlockingQueue<Message> ms = microservice_queues.get(m);
 //		synchronized (microservice_queues.get(m)) {
 //			while (ms.isEmpty()) {
 //				try {
 //					microservice_queues.get(m).wait();
 //				} catch (InterruptedException e) {
-//					System.out.println("InterruptedException");
+//					System.out.
+//
+//					println("InterruptedException");
 //				}
 //			}
 //			return (microservice_queues.get(m).poll());
 //		}
-	}
+	}*/
 
 
 	/**
 	 *
 	 * check that m is subscribed to type in hashMap of event
-	 * @param type
-	 * @param m
 	 * @return True or False
 	 */
 	public <T> boolean microserviceInEvents(Class<? extends Event<T>> type, MicroService m){
@@ -248,8 +259,6 @@ public class MessageBusImpl implements MessageBus {
 	/**
 	 *
 	 * check that m is subscribed to type in hashMap of broadcast
-	 * @param type
-	 * @param m
 	 * @return True or False
 	 */
 	public boolean microserviceInBroadcasts(Class<? extends Broadcast> type, MicroService m){
@@ -260,9 +269,8 @@ public class MessageBusImpl implements MessageBus {
 	/**
 	 *
 	 * return if the future is being resolved
-	 * @param e the event that we check if we compelte
+	 * @param e the event that we check if we complete
 	 * @param result the result we have
-	 * @param <T>
 	 * @return Boolean- true or false
 	 */
 	public <T> boolean isComplete(Event<T> e, T result){
@@ -273,12 +281,10 @@ public class MessageBusImpl implements MessageBus {
 	/**
 	 *
 	 * check that microservice got the broadcast
-	 * @param b
-	 * @param m
 	 * @return Boolean- true or false
 	 */
 	public boolean sucSendBroadcast(Message b, MicroService m){
-		Boolean found = false;
+		boolean found = false;
 		BlockingQueue<Message> microserviceB = microservice_queues.get(m);
 		for(Message ms: microserviceB){
 			if(ms == b){
@@ -291,12 +297,10 @@ public class MessageBusImpl implements MessageBus {
 	/**
 	 *
 	 * check that microservice got the event
-	 * @param e
-	 * @param m
 	 * @return Boolean- true or false
 	 */
 	public boolean sucSendEvent(Message e, MicroService m){
-		Boolean found = false;
+		boolean found = false;
 		BlockingQueue<Message> microserviceE = microservice_queues.get(m);
 		for(Message ms: microserviceE){
 			if(ms == e){
