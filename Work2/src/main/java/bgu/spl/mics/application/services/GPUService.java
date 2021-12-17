@@ -42,7 +42,7 @@ public class GPUService extends MicroService {
             complete(testModelEve, testModelEve.getModel());
             testModelEve.getModel().updateStatus();
         }
-        if(trainModelEventQueue == null){
+        if(trainModelEventQueue.size() == 0){
             gpu.updateModel(null);
             currentEV = null;
         }

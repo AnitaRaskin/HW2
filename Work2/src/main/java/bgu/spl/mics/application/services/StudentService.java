@@ -48,7 +48,7 @@ public class StudentService extends MicroService {
                     currentModel = student.getModelQueue().poll();
                 }
             }
-            if((currentModel != null) && !future.isDone()){ //Pre Trained
+            if((currentModel != null) && future != null && !future.isDone()){ //Pre Trained
                 TrainModelEvent trainEvent = new TrainModelEvent(currentModel);
                 future = sendEvent(trainEvent);
             }
