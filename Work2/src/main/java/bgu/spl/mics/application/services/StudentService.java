@@ -93,6 +93,7 @@ public class StudentService extends MicroService {
                 if(student == model.getStudent())
                     publications++;
             }
+            student.addPublications(publications);
         });
     }
 }
