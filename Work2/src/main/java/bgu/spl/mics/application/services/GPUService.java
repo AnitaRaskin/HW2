@@ -9,7 +9,7 @@ import java.util.Queue;
 /**
  * GPU service is responsible for handling the
  * {@link TrainModelEvent} and {@link TestModelEvent},
- * in addition to sending the {@link DataPreProcessEvent}.
+ * in addition to sending the {@link }.
  * This class may not hold references for objects which it is not responsible for.
  *
  * You can add private fields and public methods to this class.
@@ -56,9 +56,7 @@ public class GPUService extends MicroService {
     }
     @Override
     protected void initialize() {
-        subscribeBroadcast(Terminated.class, (Terminated terminated)->{
-            terminate();
-        });
+        subscribeBroadcast(Terminated.class, (Terminated terminated)->terminate());
         /**
          * check if the gpu is in the middle of training model
          * if yes only add him tick otherwise also change the model
@@ -73,14 +71,29 @@ public class GPUService extends MicroService {
                     complete(currentEV,currentEV.getModel());//WHY MODEL AND NOT RESULT
                     updateTheEvent();
                 }
-                gpu.doTick();
+                else
+                    gpu.doTick();
             }
         });
         subscribeEvent(TrainModelEvent.class,(TrainModelEvent trainModelEvent)->{
-            trainModelEventQueue.add(trainModelEvent);
+            if(gpu.getModel()==null || gpu.getModel().getData().dataTrained()){
+
+            }
+            else
+                trainModelEventQueue.add(trainModelEvent);
+
         });
-        subscribeEvent(TestModelEvent.class,(TestModelEvent testModelEven)->{
-            testModelEventQueue.add(testModelEven);
+        subscribeEvent(TestModelEvent.class,(TestModelEvent testModelEven)-> {
+            if(gpu.getModel()==null || gpu.getModel().getData().dataTrained()){
+                gpu.updateModel(testModelEven.getModel());
+                gpu.testModel();
+                complete(testModelEven,testModelEven.getModel());
+                testModelEven.getModel().updateStatus();
+                gpu.updateModel(null);
+            }
+            else{
+                testModelEventQueue.add(testModelEven);
+            }
         });
     }
 }

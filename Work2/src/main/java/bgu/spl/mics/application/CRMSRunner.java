@@ -101,17 +101,18 @@ public class CRMSRunner {
             print.println("            \"publications\": " + student.getPublications() + ",");
             print.println("            \"papersRead\": " + student.getPapersRead() + ",");
             print.println("            \"trainedModels\": [");
-            for (Model model : models) {
-                print.println("                {");
-                print.println("                    \"name\": " + model.getName() + ",");
-                print.println("                    \"name\": " + model.getName() + ",");
-                print.println("                    \"data\": {");
-                print.println("                        \"type\": " + model.getData().getType() + ",");
-                print.println("                        \"size\": " + model.getData().getSize());
-                print.println("                    },");
-                print.println("                    \"status\": " + model.getStatus() + ",");
-                print.println("                    \"results\": " + model.getResult());
-                print.println("                },"); // check not everyone should get it!!!!!!!!!!!!!
+            for (Model model : models) { //student.getModelQueue()
+                if(model.getStudent().equals(student)){
+                    print.println("                {");
+                    print.println("                    \"name\": " + model.getName() + ",");
+                    print.println("                    \"data\": {");
+                    print.println("                        \"type\": " + model.getData().getType() + ",");
+                    print.println("                        \"size\": " + model.getData().getSize());
+                    print.println("                    },");
+                    print.println("                    \"status\": " + model.getStatus() + ",");
+                    print.println("                    \"results\": " + model.getResult());
+                    print.println("                },"); // check not everyone should get it!!!!!!!!!!!!!
+                }
             }
             print.println("        },");
         }
