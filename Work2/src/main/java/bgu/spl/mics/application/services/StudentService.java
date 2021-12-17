@@ -17,7 +17,6 @@ import java.util.LinkedList;
  */
 public class StudentService extends MicroService {
     //Fields
-    //private MessageBus messageBus = MessageBusImpl.getInstance();
     private Student student;
     private Model currentModel ;
     Future future;
@@ -45,24 +44,41 @@ public class StudentService extends MicroService {
         subscribeBroadcast(TickBroadcast.class,(TickBroadcast timeB)->{
             if(currentModel==null){
                 if(student.getModelQueue() != null){
-                    currentModel = student.getModelQueue().poll();
+                    if(student.getModelQueue().peek().getStatus().equals(Model.Status.PreTrained)) {
+                        currentModel = student.getModelQueue().poll();
+                        future = sendEvent(new TrainModelEvent(currentModel));
+                        System.out.println("sent train");
+                    }
                 }
             }
-            if((currentModel != null) && future != null && !future.isDone()){ //Pre Trained
-                TrainModelEvent trainEvent = new TrainModelEvent(currentModel);
-                future = sendEvent(trainEvent);
+            else if(future.isDone() && currentModel.getStatus().equals(Model.Status.Trained)){
+                future = sendEvent(new TestModelEvent(currentModel));
+                System.out.println("sent test");
+
             }
-            else if((currentModel != null)){ // && future.isDone() == true -> did trained
-                if(currentModel.getStatus().equals(Model.Status.Trained)){
-                    TestModelEvent testModelEvent = new TestModelEvent(currentModel);
-                    future = sendEvent(testModelEvent);
-                }
-                else{ //Tested
-                    PublishResultsEvent publishReEve = new PublishResultsEvent(currentModel);
-                    future = sendEvent(publishReEve);
-                    student.getModelQueue().add(currentModel);
-                }
+            else if(future.isDone() && currentModel.getStatus().equals(Model.Status.Tested) && currentModel.getResult().equals(Model.Result.Good)){
+                future = sendEvent(new PublishResultsEvent(currentModel));
+                student.getModelQueue().add(currentModel);
+                currentModel = null;
+                System.out.println("publish mother FUCKER!!!!!");
             }
+//            if((currentModel != null) && future != null && !future.isDone()&& currentModel.getStatus().equals(Model.Status.PreTrained)){ //Pre Trained
+//                TrainModelEvent trainEvent = new TrainModelEvent(currentModel);
+//                future = sendEvent(trainEvent);
+//                System.out.println("send to train");
+//            }
+//            else if((currentModel != null)){ // && future.isDone() == true -> did trained
+//                if(currentModel.getStatus().equals(Model.Status.Trained)){
+//                    TestModelEvent testModelEvent = new TestModelEvent(currentModel);
+//                    future = sendEvent(testModelEvent);
+//                    System.out.println("send to test");
+//                }
+//                else{ //Tested
+//                    PublishResultsEvent publishReEve = new PublishResultsEvent(currentModel);
+//                    future = sendEvent(publishReEve);
+//                    student.getModelQueue().add(currentModel);
+//                }
+//            }
         });
 
         /**

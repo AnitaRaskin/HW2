@@ -47,12 +47,6 @@ public class CRMSRunner {
         LinkedList<Thread> threads=new LinkedList<>();
 
         //create all the services
-        for(Student student:students){
-            StudentService studentService = new StudentService(student.getName(), student);
-            Thread t = new Thread(studentService);
-            t.start();
-            threads.add(t);
-        }
         for(CPU cpu:CPUS){
             cluster.addCPU(cpu);
             CPUService cpuService = new CPUService(cpu);
@@ -73,7 +67,12 @@ public class CRMSRunner {
             t.start();
             threads.add(t);
         }
-
+        for(Student student:students){
+            StudentService studentService = new StudentService(student.getName(), student);
+            Thread t = new Thread(studentService);
+            t.start();
+            threads.add(t);
+        }
         TimeService timeService = new TimeService(TickTime, Duration);
         Thread thread = new Thread(timeService);
         thread.start();

@@ -55,6 +55,7 @@ public class CPU {
                     dataBatchProcess++;
                     tick = 0;
                     cluster.addCPU(this);
+                    System.out.println("I process SHIT CPU-58");
                 }
             }
             else {

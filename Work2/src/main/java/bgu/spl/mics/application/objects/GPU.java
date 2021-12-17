@@ -75,6 +75,7 @@ public class GPU {
             DataBatch db = new DataBatch(data, i);
             Disk.add(db);
         }
+        System.out.println("BITCHES I SPLIT DATA GPU-78");
     }
 
     /**

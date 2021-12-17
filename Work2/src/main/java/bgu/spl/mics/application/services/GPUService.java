@@ -58,6 +58,7 @@ public class GPUService extends MicroService {
     @Override
     protected void initialize() {
         subscribeBroadcast(TerminateBroadcast.class, (TerminateBroadcast terminated)->terminate());
+
         /**
          * check if the gpu is in the middle of training model
          * if yes only add him tick otherwise also change the model
@@ -78,6 +79,7 @@ public class GPUService extends MicroService {
             }
         });
         subscribeEvent(TrainModelEvent.class,(TrainModelEvent trainModelEvent)->{
+            System.out.println("got shit to train GPUS-82");
             trainModelEventQueue.add(trainModelEvent);
             if(currentEV == null)
                 updateTheEvent();
