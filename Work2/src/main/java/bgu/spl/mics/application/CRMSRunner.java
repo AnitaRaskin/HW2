@@ -101,8 +101,8 @@ public class CRMSRunner {
             print.println("            \"publications\": " + student.getPublications() + ",");
             print.println("            \"papersRead\": " + student.getPapersRead() + ",");
             print.println("            \"trainedModels\": [");
-            for (Model model : models) { //student.getModelQueue()
-                //if(model.getStudent().equals(student)){
+            for (Model model : student.getModelQueue()) {
+                System.out.println(student);
                     print.println("                {");
                     print.println("                    \"name\": " + model.getName() + ",");
                     print.println("                    \"data\": {");
@@ -112,7 +112,6 @@ public class CRMSRunner {
                     print.println("                    \"status\": " + model.getStatus() + ",");
                     print.println("                    \"results\": " + model.getResult());
                     print.println("                },"); // check not everyone should get it!!!!!!!!!!!!!
-                //}
             }
             print.println("        },");
         }
@@ -156,6 +155,8 @@ public class CRMSRunner {
         print.println("    \"gpuTimeUsed\": " + gpuTime + ",");
         print.println("    \"batchesProcessed\": " +cluster.getDataBatchSize() );
         print.println("}");
+        print.close();
+
         //</editor-fold>
     }
 
