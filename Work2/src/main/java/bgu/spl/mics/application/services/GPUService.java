@@ -42,8 +42,10 @@ public class GPUService extends MicroService {
             complete(testModelEve,testModelEve.getModel());
             testModelEve.getModel().updateStatus();
         }
-        if(trainModelEventQueue == null)
+        if(trainModelEventQueue == null){
             gpu.updateModel(null);
+            currentEV = null;
+        }
         else{
             TrainModelEvent trainModelEve = trainModelEventQueue.poll();
             currentEV = trainModelEve;
@@ -62,38 +64,28 @@ public class GPUService extends MicroService {
          * if there are no more available models he gives him null model
          */
         subscribeBroadcast(TickBroadcast.class,(TickBroadcast timeB)->{
-            if(gpu.getModel()==null){
+            if(currentEV == null){
                 updateTheEvent();
+                if(currentEV != null)
+                    gpu.doTick();
             }
             else {
+                gpu.doTick();
                 if(gpu.getModel().getData().dataTrained()){
                     complete(currentEV,currentEV.getModel());//WHY MODEL AND NOT RESULT
                     updateTheEvent();
                 }
-                else
-                    gpu.doTick();
             }
         });
         subscribeEvent(TrainModelEvent.class,(TrainModelEvent trainModelEvent)->{
-            if(gpu.getModel()==null || gpu.getModel().getData().dataTrained()){
-                if(gpu.getModel().getData().dataTrained())
-                    complete(currentEV,currentEV.getModel());
-            }
-            else
-                trainModelEventQueue.add(trainModelEvent);
-
+            trainModelEventQueue.add(trainModelEvent);
+            if(currentEV == null)
+                updateTheEvent();
         });
         subscribeEvent(TestModelEvent.class,(TestModelEvent testModelEven)-> {
-            if(gpu.getModel()==null || gpu.getModel().getData().dataTrained()){
-                gpu.updateModel(testModelEven.getModel());
-                gpu.testModel();
-                complete(testModelEven,testModelEven.getModel());
-                testModelEven.getModel().updateStatus();
-                gpu.updateModel(null);
-            }
-            else{
-                testModelEventQueue.add(testModelEven);
-            }
+            testModelEventQueue.add(testModelEven);
+            if(currentEV == null)
+                updateTheEvent();
         });
     }
 }
