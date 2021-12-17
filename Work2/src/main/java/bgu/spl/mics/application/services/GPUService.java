@@ -20,7 +20,7 @@ public class GPUService extends MicroService {
     private GPU gpu;
     private Queue<TestModelEvent> testModelEventQueue;
     private Queue<TrainModelEvent> trainModelEventQueue;
-    private TrainModelEvent currentEV = null;//WHY ONLY TRAIN AND NOT TEST
+    private TrainModelEvent currentEV = null;
     private String name;
 
     public GPUService(GPU gpu) {
@@ -77,7 +77,8 @@ public class GPUService extends MicroService {
         });
         subscribeEvent(TrainModelEvent.class,(TrainModelEvent trainModelEvent)->{
             if(gpu.getModel()==null || gpu.getModel().getData().dataTrained()){
-
+                if(gpu.getModel().getData().dataTrained())
+                    complete();
             }
             else
                 trainModelEventQueue.add(trainModelEvent);

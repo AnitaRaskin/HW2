@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class StudentService extends MicroService {
     private Student student;
     private MessageBus messageBus = MessageBusImpl.getInstance();
+    private Model currentModel = null;
     Future future;
     public StudentService(String name, Student student) {
         super("studentServiceOf:"+name);
@@ -38,20 +39,23 @@ public class StudentService extends MicroService {
          *  for every tick send the proper event for the first cell in the Queue and then return it to the Queue
          */
         subscribeBroadcast(TickBroadcast.class,(TickBroadcast timeB)->{
-            Model studentModel = student.getModelQueue().poll();
-            if(studentModel.getStatus() == Model.Status.PreTrained){
-                TrainModelEvent trainEvent = new TrainModelEvent(studentModel);
+            if(currentModel==null){
+                currentModel = student.getModelQueue().poll();
+            }
+            if(currentModel != null && currentModel.getStatus() == Model.Status.PreTrained){
+                TrainModelEvent trainEvent = new TrainModelEvent(currentModel);
                 future = sendEvent(trainEvent);
             }
-            else if(future.get(1, TimeUnit.NANOSECONDS)!=null && studentModel.getStatus() == Model.Status.Trained){
-                TestModelEvent testModelEvent = new TestModelEvent(studentModel);
+            else if(currentModel != null && future.get(1, TimeUnit.NANOSECONDS)!=null && currentModel.getStatus() == Model.Status.Trained){
+                TestModelEvent testModelEvent = new TestModelEvent(currentModel);
                 future = sendEvent(testModelEvent);
             }
-            else if(future.get(1, TimeUnit.NANOSECONDS)!=null && studentModel.getStatus() == Model.Status.Tested) {
-                PublishResultsEvent publishReEve = new PublishResultsEvent(studentModel);
+            else if(currentModel != null && future.get(1, TimeUnit.NANOSECONDS)!=null && currentModel.getStatus() == Model.Status.Tested) {
+                PublishResultsEvent publishReEve = new PublishResultsEvent(currentModel);
                 future = sendEvent(publishReEve);
+                student.getModelQueue().add(currentModel);
             }
-            student.getModelQueue().add(studentModel);
+
         });
         /**
          * all the model that are in this linkList the student "read"
