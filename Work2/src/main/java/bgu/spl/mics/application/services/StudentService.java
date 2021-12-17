@@ -17,46 +17,55 @@ import java.util.concurrent.TimeUnit;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class StudentService extends MicroService {
+    //Fields
+    //private MessageBus messageBus = MessageBusImpl.getInstance();
     private Student student;
-    private MessageBus messageBus = MessageBusImpl.getInstance();
-    private Model currentModel = null;
+    private Model currentModel ;
     Future future;
+
+
     public StudentService(String name, Student student) {
         super("studentServiceOf:"+name);
+        future = null;
         this.student = student;
-
+        currentModel = null;
     }
 
-    @Override
     /**
-     * this function subscribe this microservice to the proper
-     * events and broadcast that he needs to function
+     *
+     * this function subscribe this microservice to the proper events and broadcast that he needs to function
      * like Terminated,TickBroadcast,PublishConferenceBroadcast
      */
+    @Override
     protected void initialize() {
         subscribeBroadcast(Terminated.class, (terminate)-> terminate());
+
         /**
          *  for every tick send the proper event for the first cell in the Queue and then return it to the Queue
          */
         subscribeBroadcast(TickBroadcast.class,(TickBroadcast timeB)->{
             if(currentModel==null){
-                currentModel = student.getModelQueue().poll();
+                if(student.getModelQueue() != null){
+                    currentModel = student.getModelQueue().poll();
+                }
             }
-            if(currentModel != null && currentModel.getStatus() == Model.Status.PreTrained){
+            if((currentModel != null) && !future.isDone()){ //Pre Trained
                 TrainModelEvent trainEvent = new TrainModelEvent(currentModel);
                 future = sendEvent(trainEvent);
             }
-            else if(currentModel != null && future.get(1, TimeUnit.NANOSECONDS)!=null && currentModel.getStatus() == Model.Status.Trained){
-                TestModelEvent testModelEvent = new TestModelEvent(currentModel);
-                future = sendEvent(testModelEvent);
+            else if((currentModel != null)){ // && future.isDone() == true -> did trained
+                if(currentModel.getStatus().equals(Model.Status.Trained)){
+                    TestModelEvent testModelEvent = new TestModelEvent(currentModel);
+                    future = sendEvent(testModelEvent);
+                }
+                else{ //Tested
+                    PublishResultsEvent publishReEve = new PublishResultsEvent(currentModel);
+                    future = sendEvent(publishReEve);
+                    student.getModelQueue().add(currentModel);
+                }
             }
-            else if(currentModel != null && future.get(1, TimeUnit.NANOSECONDS)!=null && currentModel.getStatus() == Model.Status.Tested) {
-                PublishResultsEvent publishReEve = new PublishResultsEvent(currentModel);
-                future = sendEvent(publishReEve);
-                student.getModelQueue().add(currentModel);
-            }
-
         });
+
         /**
          * all the model that are in this linkList the student "read"
          * count all the model that are belongs to this student and add them to his publications
@@ -70,7 +79,5 @@ public class StudentService extends MicroService {
                     publications++;
             }
         });
-        //sendEvent();
-
     }
 }

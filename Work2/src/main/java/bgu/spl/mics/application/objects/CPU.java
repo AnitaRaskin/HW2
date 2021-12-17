@@ -48,17 +48,20 @@ public class CPU {
     private void processData(){
         if(data!=null) {
             DataBatch current = data.peek();
-            if (tick == processingTime(current.getType())) {
-                cluster.sendProcessedData(data.remove());
-                runTime += tick;
-                dataBatchProcess++;
-                tick = 0;
-                cluster.addCPU(this);
+            if(current != null){
+                if (tick == processingTime(current.getType())) {
+                    cluster.sendProcessedData(data.remove());
+                    runTime += tick;
+                    dataBatchProcess++;
+                    tick = 0;
+                    cluster.addCPU(this);
+                }
+            }
+            else {
+                tick=0;
             }
         }
-        else {
-            tick=0;
-        }
+
     }
 
     /**

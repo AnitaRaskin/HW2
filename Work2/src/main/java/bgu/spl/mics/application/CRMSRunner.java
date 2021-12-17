@@ -102,7 +102,7 @@ public class CRMSRunner {
             print.println("            \"papersRead\": " + student.getPapersRead() + ",");
             print.println("            \"trainedModels\": [");
             for (Model model : models) { //student.getModelQueue()
-                if(model.getStudent().equals(student)){
+                //if(model.getStudent().equals(student)){
                     print.println("                {");
                     print.println("                    \"name\": " + model.getName() + ",");
                     print.println("                    \"data\": {");
@@ -112,7 +112,7 @@ public class CRMSRunner {
                     print.println("                    \"status\": " + model.getStatus() + ",");
                     print.println("                    \"results\": " + model.getResult());
                     print.println("                },"); // check not everyone should get it!!!!!!!!!!!!!
-                }
+                //}
             }
             print.println("        },");
         }
