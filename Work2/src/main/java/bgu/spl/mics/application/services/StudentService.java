@@ -33,9 +33,7 @@ public class StudentService extends MicroService {
      * like Terminated,TickBroadcast,PublishConferenceBroadcast
      */
     protected void initialize() {
-        subscribeBroadcast(Terminated.class, (Terminated terminated)->{
-            terminate();
-        });
+        subscribeBroadcast(Terminated.class, (terminate)-> terminate());
         /**
          *  for every tick send the proper event for the first cell in the Queue and then return it to the Queue
          */
@@ -68,6 +66,7 @@ public class StudentService extends MicroService {
                     publications++;
             }
         });
+        //sendEvent();
 
     }
 }

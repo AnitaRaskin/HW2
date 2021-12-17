@@ -23,7 +23,6 @@ public class TimeService extends MicroService{
 	private int speed;
 	private int duration;
 	private int currentTime = 0;
-	MessageBus messageBus = MessageBusImpl.getInstance();
 
 	public TimeService(int speed, int duration) {
 		super("timeService");
@@ -38,7 +37,7 @@ public class TimeService extends MicroService{
 	 * otherwise we construct it with false parameter which it means to do regular tick
 	 */
 	private void broadcastTick(){
-		System.out.println(currentTime);
+		System.out.println(currentTime +" my print in class TimeService in fun broadcastTick");
 		currentTime++;
 		Broadcast tickBroadcast;
 		if(currentTime == duration) {
@@ -47,7 +46,7 @@ public class TimeService extends MicroService{
 		}
 		else {
 			tickBroadcast = new TickBroadcast();
-			messageBus.sendBroadcast(tickBroadcast);
+			this.sendBroadcast(tickBroadcast);
 		}
 
 	}

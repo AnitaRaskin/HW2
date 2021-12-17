@@ -4,7 +4,7 @@ import bgu.spl.mics.*;
 import bgu.spl.mics.application.objects.CPU;
 
 /**
- * CPU service is responsible for handling the {@link DataPreProcessEvent}.
+ * CPU service is responsible for handling the {@link }.
  * This class may not hold references for objects which it is not responsible for.
  * You can add private fields and public methods to this class.
  * You MAY change constructor signatures and even add new public constructors.
@@ -21,7 +21,9 @@ public class CPUService extends MicroService {
 
     @Override
     protected void initialize() {
-        subscribeBroadcast(Terminated.class, (terminate) -> this.terminate());
+        subscribeBroadcast(Terminated.class, (terminate) -> {
+            this.terminate();});
+
         subscribeBroadcast(TickBroadcast.class, (tick) -> this.cpu.updateTime());
     }
 }

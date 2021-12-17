@@ -164,7 +164,9 @@ public abstract class MicroService implements Runnable {
         initialize();
         while (!terminated) {
             try {
+                System.out.println("before await - Ms fun run");
                 Message message = messageBus.awaitMessage(this);
+                System.out.println("after wait - Ms func run");
                 if(callbackEvent.get(message) != null){
                     callbackEvent.get(message).call(message);
                 }
@@ -173,7 +175,6 @@ public abstract class MicroService implements Runnable {
             }
         }
         messageBus.unregister(this);
-        System.out.println("microservice terminated: "+this.getName());
     }
 
 }
