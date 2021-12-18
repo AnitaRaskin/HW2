@@ -23,8 +23,10 @@ public class GPU {
     private int memoryLimitation;
     private int ticks;
     private int runTime=0;
+    private int DataBatchSize;
 
     public GPU(String type, Model model){
+        DataBatchSize = 0;
         this.type = Type.valueOf(type);
         cluster = Cluster.getInstance();
         this.model = model;
@@ -75,7 +77,7 @@ public class GPU {
             DataBatch db = new DataBatch(data, i);
             Disk.add(db);
         }
-        System.out.println("BITCHES I SPLIT DATA GPU-78");
+        System.out.println("number of DataBatches "+Disk.size()+ " GPU-78");
     }
 
     /**
@@ -95,7 +97,7 @@ public class GPU {
      *      *        @post size() = @pre size() - 1
      */
     public void sendDataToPro(){
-        while(Disk!=null && memoryLimitation > 0){//able to train dataBatch
+        while(Disk.size() > 0 && memoryLimitation > 0){//able to train dataBatch
             DataBatch db = Disk.remove();
             memoryLimitation--;
             cluster.takeDataToProc(db);
@@ -110,14 +112,18 @@ public class GPU {
      *        @post size() = @pre size() - 1
      */
     private void trainBatch(){
-        if(VRAM != null){
+        if(VRAM.size() > 0){
+            System.out.println("VRAm>0 GPU114");
             if(ticks == neededTicks()){
+                System.out.println("have enough ticks");
                 model.getData().addTrainedData();
                 VRAM.poll();
                 runTime += ticks;
                 ticks=0;
                 memoryLimitation++;
+                DataBatchSize ++;
                 sendDataToPro();
+                System.out.println("I train Data, current Time used: "+runTime+ "GPU121" );
             }
         }
         else
@@ -168,6 +174,7 @@ public class GPU {
      * @post: @post memoryLimitation = @pre memoryLimitation + processed.memory
      */
     public void addProcessedData(DataBatch dataBatch){
+        System.out.println("Data added to VRAM gpu174");
         VRAM.add(dataBatch);
     }
 
@@ -186,6 +193,7 @@ public class GPU {
      * @post: @post tick = @pre tick +1
      */
     public void doTick(){
+//        System.out.println("did TIck GPU190");
         ticks++;
         trainBatch();
     }
@@ -200,6 +208,9 @@ public class GPU {
     }
     public int getRunTime(){
         return runTime;
+    }
+    public int getDataBatchSize(){
+        return DataBatchSize;
     }
 
 }

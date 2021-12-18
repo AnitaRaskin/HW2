@@ -18,12 +18,13 @@ public class ConferenceService extends MicroService {
      * Constructor
      */
     public ConferenceService(ConfrenceInformation confrenceInformation) {
-        super("conferenceInformation");
+        super("conferenceInformationService");
         this.confrenceInformation = confrenceInformation;
     }
 
     @Override
     protected void initialize() {
+//        System.out.println(getClass()+"was initialize");
         //basic subscribe - terminate and tickBroadcast
         subscribeBroadcast(TerminateBroadcast.class, (terminate) -> this.terminate());
         subscribeBroadcast(TickBroadcast.class, (tick) -> {

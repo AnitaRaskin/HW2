@@ -55,7 +55,7 @@ public class CPU {
                     dataBatchProcess++;
                     tick = 0;
                     cluster.addCPU(this);
-                    System.out.println("I process SHIT CPU-58");
+                    System.out.println("total time used for process: "+runTime+" dataBatch I process: "+dataBatchProcess);
                 }
             }
             else {

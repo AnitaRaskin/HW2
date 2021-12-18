@@ -52,12 +52,17 @@ public class TimeService extends MicroService{
 
 	@Override
 	protected void initialize() {
+		try{
+			Thread.sleep(20);
+		}catch (InterruptedException e){
+		}
+//		System.out.println(getClass()+"was initialize");
 		subscribeBroadcast(TerminateBroadcast.class, (terminate) -> this.terminate());
 		TimerTask task = new TimerTask() {
 			public void run() {
 				broadcastTick();
 			}
 		};
-		timer.schedule(task,1,speed);
+		timer.schedule(task,0,speed);
 	}
 }

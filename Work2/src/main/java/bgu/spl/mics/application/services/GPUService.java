@@ -58,7 +58,6 @@ public class GPUService extends MicroService {
     @Override
     protected void initialize() {
         subscribeBroadcast(TerminateBroadcast.class, (TerminateBroadcast terminated)->terminate());
-
         /**
          * check if the gpu is in the middle of training model
          * if yes only add him tick otherwise also change the model
@@ -74,12 +73,12 @@ public class GPUService extends MicroService {
                 gpu.doTick();
                 if(gpu.getModel().getData().dataTrained()){
                     complete(currentEV,currentEV.getModel());//WHY MODEL AND NOT RESULT
+                    gpu.getModel().updateStatus();
                     updateTheEvent();
                 }
             }
         });
         subscribeEvent(TrainModelEvent.class,(TrainModelEvent trainModelEvent)->{
-            System.out.println("got shit to train GPUS-82");
             trainModelEventQueue.add(trainModelEvent);
             if(currentEV == null)
                 updateTheEvent();
@@ -89,5 +88,7 @@ public class GPUService extends MicroService {
             if(currentEV == null)
                 updateTheEvent();
         });
+
+
     }
 }

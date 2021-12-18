@@ -17,7 +17,10 @@ public class Cluster {
 	private static int dataBatchSize;
 	private static Queue<CPU> CPUS;
 	private static Queue<GPU> GPUS;
-	private static Queue<DataBatch> dataFromGPU;
+	private static Queue<DataBatch> dataFromGPUTabular;
+	private static Queue<DataBatch> dataFromGPUText;
+	private static Queue<DataBatch> dataFromGPUImages;
+	//private static Queue<CPU> awailableCPU;
 	private static Object lockCPU = new Object();
 	private static Object lockGPU = new Object();
 	private static Object lockReturnDG = new Object();
@@ -35,14 +38,30 @@ public class Cluster {
 		return thisCluster;
 	}
 	private Cluster (){
-		GPUS = new LinkedList<GPU>();
 		CPUS = new LinkedList<CPU>();
+		GPUS = new LinkedList<GPU>();
+
 		dataBatchSize = 0;
+		dataFromGPUTabular = new LinkedList<>();
+		dataFromGPUText = new LinkedList<>();
+		dataFromGPUImages = new LinkedList<>();
+		//awailableCPU = new LinkedList<>();
 	}
+
 	public void addCPU(CPU cpu){
+		//awailableCPU.add(cpu);
 		synchronized (lockCPU) {
-			if (dataFromGPU != null) {
-				cpu.receiveData(dataFromGPU.poll());
+			if (dataFromGPUTabular.size() > 0) {
+				cpu.receiveData(dataFromGPUTabular.poll());
+				System.out.println("CPU take dataBatch from Tabular Cluster 52");
+			}
+			else if(dataFromGPUText.size() > 0){
+				cpu.receiveData(dataFromGPUText.poll());
+				System.out.println("CPU take dataBatch from Text Cluster 52");
+			}
+			else if(dataFromGPUImages.size() > 0){
+				cpu.receiveData(dataFromGPUImages.poll());
+				System.out.println("CPU take dataBatch from Images Cluster 52");
 			}
 			else {
 				CPUS.add(cpu);
@@ -61,12 +80,21 @@ public class Cluster {
 	 */
 	public void takeDataToProc(DataBatch dataBatch){
 		synchronized (lockGPU) {
-			if (CPUS != null) {
+			if (CPUS.size() > 0) {
 				CPU currentCPU = bestCPU(CPUS,dataBatch);
-				currentCPU.receiveData(dataBatch);
+				if (currentCPU != null) {
+					currentCPU.receiveData(dataBatch);
+					System.out.println("CPU " + currentCPU + " is free Cluster 68");
+				}
 				//CPUS.add(currentCPU);
-			} else {
-				dataFromGPU.add(dataBatch);
+			} else {// have no CPU to take this data
+				if(dataBatch.getType() == Data.Type.Text)
+					dataFromGPUText.add(dataBatch);
+				else if(dataBatch.getType() == Data.Type.Tabular)
+					dataFromGPUTabular.add(dataBatch);
+				else
+					dataFromGPUImages.add(dataBatch);
+//				System.out.println("I have no CPU free Cluster 72");
 			}
 		}
 	}
@@ -81,7 +109,7 @@ public class Cluster {
 		CPU bestCPU = cpus.peek();
 		for (int i=0; i< cpus.size(); i++){
 			CPU temp = cpus.poll();
-			if(processingTime(bestCPU,dataBatch.getType()) > processingTime(temp, dataBatch.getType()))
+			if( bestCPU != null && temp != null && processingTime(bestCPU,dataBatch.getType()) > processingTime(temp, dataBatch.getType()))
 				bestCPU = temp;
 			cpus.add(temp);
 		}
@@ -118,16 +146,19 @@ public class Cluster {
 	 * @param dataBatch
 	 */
 	public void sendProcessedData(DataBatch dataBatch){
+		System.out.println("sending data back to GPU");
 		synchronized (lockReturnDG){
 			Data originOfData = dataBatch.getData();
 			dataBatchSize = dataBatchSize + 1;
 			boolean found = false;
-			for(int i=0; i<= GPUS.size() && !found; i++){
+			for(int i=0; i< GPUS.size() && !found; i++){
 				GPU currentGPU = GPUS.poll();
-				if(currentGPU.getModel().getData()==originOfData){
+				if(currentGPU.getModel()!=null && currentGPU.getModel().getData()==originOfData){
 					found = true;
 					currentGPU.addProcessedData(dataBatch);
+					System.out.println("VRAM succeed to return Data Cluster142");
 				}
+				GPUS.add(currentGPU);
 			}
 		}
 	}

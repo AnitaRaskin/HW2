@@ -37,7 +37,7 @@ public class StudentService extends MicroService {
     @Override
     protected void initialize() {
         subscribeBroadcast(TerminateBroadcast.class, (terminate)-> terminate());
-
+//        System.out.println(getClass()+"was initialize");
         /**
          *  for every tick send the proper event for the first cell in the Queue and then return it to the Queue
          */
@@ -45,9 +45,9 @@ public class StudentService extends MicroService {
             if(currentModel==null){
                 if(student.getModelQueue() != null){
                     if(student.getModelQueue().peek().getStatus().equals(Model.Status.PreTrained)) {
-                        currentModel = student.getModelQueue().poll();
+                        currentModel = student.getModelQueue().peek();
+                        System.out.println("trying to send Model" + currentModel.getData().getType() + " StudentService 50");
                         future = sendEvent(new TrainModelEvent(currentModel));
-                        System.out.println("sent train");
                     }
                 }
             }
@@ -58,9 +58,14 @@ public class StudentService extends MicroService {
             }
             else if(future.isDone() && currentModel.getStatus().equals(Model.Status.Tested) && currentModel.getResult().equals(Model.Result.Good)){
                 future = sendEvent(new PublishResultsEvent(currentModel));
-                student.getModelQueue().add(currentModel);
+                student.getModelQueue().add(student.getModelQueue().poll());
                 currentModel = null;
                 System.out.println("publish mother FUCKER!!!!!");
+            }
+            else if(future.isDone() && currentModel.getStatus().equals(Model.Status.Tested) && currentModel.getResult().equals(Model.Result.Bad)){
+                System.out.println("the model is not finished");
+                student.getModelQueue().add(student.getModelQueue().poll());
+                currentModel = null;
             }
 //            if((currentModel != null) && future != null && !future.isDone()&& currentModel.getStatus().equals(Model.Status.PreTrained)){ //Pre Trained
 //                TrainModelEvent trainEvent = new TrainModelEvent(currentModel);

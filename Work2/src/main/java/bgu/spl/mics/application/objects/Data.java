@@ -10,7 +10,7 @@ public class Data {
     /**
      * Enum representing the Data type.
      */
-    enum Type {
+    public enum Type {
         Images, Text, Tabular
     }
 
@@ -33,5 +33,9 @@ public class Data {
     }
     public int getSize(){
         return size;
+    }
+
+    public int getTrained() {
+        return trained;
     }
 }

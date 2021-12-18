@@ -6,6 +6,9 @@ import bgu.spl.mics.application.services.*;
 import com.google.gson.*;//IMPORT GSON -> CAN READ FILE TYPE GiSON
 import java.io.*;
 import java.util.LinkedList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /** This is the Main class of Compute Resources Management System application. You should parse the input file,
  * create the different instances of the objects, and run the system.
@@ -27,7 +30,7 @@ public class CRMSRunner {
         //start taking all the info from gson
         JsonArray JsonStudents = object.getAsJsonArray("Students");
         Student[] students = createStudents(JsonStudents);
-        Model[] models = createModels(students, JsonStudents);
+        LinkedList<Model> models = createModels(students, JsonStudents);
 
         JsonArray JGpus = object.getAsJsonArray("GPUS");
         GPU[] GPUS = createGPUs(JGpus);
@@ -47,36 +50,61 @@ public class CRMSRunner {
         LinkedList<Thread> threads=new LinkedList<>();
 
         //create all the services
+
+//        int numberOfThread = CPUS.length + GPUS.length + students.length + conferences.length + 1;
+//        CountDownLatch startThreadCount = new CountDownLatch(numberOfThread-1);
+//        CountDownLatch endThreadCount = new CountDownLatch(1);
+
+//        ExecutorService runner = Executors.newFixedThreadPool(numberOfThread);
         for(CPU cpu:CPUS){
             cluster.addCPU(cpu);
             CPUService cpuService = new CPUService(cpu);
+//            runner.execute(cpuService);
             Thread t = new Thread(cpuService);
-            t.start();
             threads.add(t);
         }
         for(GPU gpu:GPUS){
             cluster.addGPU(gpu);
             GPUService gpuService = new GPUService(gpu);
+//            runner.execute(gpuService);
             Thread t = new Thread(gpuService);
-            t.start();
             threads.add(t);
         }
         for(ConfrenceInformation confrenceInformation:conferences){
             ConferenceService conferenceService = new ConferenceService(confrenceInformation);
+//            runner.execute(conferenceService);
             Thread t = new Thread(conferenceService);
-            t.start();
             threads.add(t);
         }
         for(Student student:students){
             StudentService studentService = new StudentService(student.getName(), student);
+//            runner.execute(studentService);
             Thread t = new Thread(studentService);
-            t.start();
             threads.add(t);
         }
+
+        for (Thread thread:threads){
+            thread.start();
+        }
+
         TimeService timeService = new TimeService(TickTime, Duration);
         Thread thread = new Thread(timeService);
+//
+//        try{
+//            startThreadCount.await();
+//        } catch (InterruptedException e){
+//            e.printStackTrace();
+//        }
+//        runner.execute(timeService);
+//        try{
+//            endThreadCount.await();
+//        }catch (InterruptedException e){
+//            e.printStackTrace();
+//        }
+
         thread.start();
         threads.add(thread);
+
 
         for(Thread t: threads){
             try {
@@ -145,13 +173,17 @@ public class CRMSRunner {
         for(CPU cpu:CPUS){
             cpuTime = cpuTime + cpu.getRunTime();
         }
+        int sum=0;
         for(GPU gpu:GPUS){
             gpuTime = gpuTime + gpu.getRunTime();
+            sum = sum + gpu.getDataBatchSize();
         }
+
 
         print.println("    \"cpuTimeUsed\": " + cpuTime + ",");
         print.println("    \"gpuTimeUsed\": " + gpuTime + ",");
-        print.println("    \"batchesProcessed\": " +cluster.getDataBatchSize() );
+        print.println("    \"batchesProcessed by gpu\": " +sum);
+        print.println("    \"batchesProcessed by cpu\": " +cluster.getDataBatchSize() );
         print.println("}");
         print.close();
 
@@ -169,18 +201,39 @@ public class CRMSRunner {
         return Students;
     }
 
-    public static Model[] createModels(Student[] students, JsonArray JsonStudents) {
+    public static LinkedList<Model> createModels(Student[] students, JsonArray JsonStudents) {
         int size = JsonStudents.size();
-        Model[] models = new Model[size];
+        LinkedList<Model> models = new LinkedList<Model>();
         for (int i = 0; i < size; i++) {//students
             JsonObject student = JsonStudents.get(i).getAsJsonObject();
             JsonArray model = student.getAsJsonArray("models"); //array of models
+            LinkedList<Model> tabularModel = new LinkedList<>();
+            LinkedList<Model> textModel = new LinkedList<>();
+            LinkedList<Model> imageModel = new LinkedList<>();
             for (int j = 0; j < model.size(); j++) { //run over all the models
                 JsonObject mod = model.get(j).getAsJsonObject();
                 Data data = new Data(mod.get("type").getAsString(), mod.get("size").getAsInt());
-                models[i] = new Model(mod.get("name").getAsString(), data, students[i]);
-                students[i].addModel(models[i]);
+                Model addModel = new Model(mod.get("name").getAsString(), data, students[i]);
+                models.add(addModel);
+//                students[i].addModel(addModel);
+                if(addModel.getData().getType() == Data.Type.Tabular){
+                    tabularModel.add(addModel);
+                }
+                else if(addModel.getData().getType() == Data.Type.Text)
+                    textModel.add(addModel);
+                else
+                    imageModel.add(addModel);
             }
+            for(Model tabM:tabularModel){
+                students[i].addModel(tabM);
+            }
+            for (Model textM:textModel){
+                students[i].addModel(textM);
+            }
+            for(Model imageM:imageModel){
+                students[i].addModel(imageM);
+            }
+
         }
         return models;
     }

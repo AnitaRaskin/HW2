@@ -112,11 +112,12 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public <T> void complete(Event<T> e, T result) {
-		if(result != null){
-			Future<T> res = futureOfEvent.get(e);
+		Future<T> res = futureOfEvent.get(e);
+		if(res!= null){
 			res.resolve(result);
 			futureOfEvent.put(e,res);
 		}
+
 	}
 
 	/**
@@ -147,19 +148,16 @@ public class MessageBusImpl implements MessageBus {
 			//microservice
 			synchronized (this) {
 				hashMapMicroserviceWithMessage.remove(m);
-				//System.out.println(microservice_queues.get(m));
 				//events
 				for(BlockingQueue block:hashMapEventWithMicroServices.values()){
 					if(block!=null)
 						block.remove(m);
 				}
-				//while(events_MS.values().remove(m));
 				//broadcast
 				for(BlockingQueue block:hashMapBroadcastWithMicroServices.values()){
 					if(block!=null)
 						block.remove(m);
 				}
-				//while(broadcasts_MS.values().remove(m));
 			}
 		}
 	}
@@ -173,23 +171,26 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public void sendBroadcast(Broadcast b) {
-		synchronized (lockBtAwaitSen) {
+		//synchronized (lockBtAwaitSen) {
 			if (!hashMapBroadcastWithMicroServices.isEmpty()) {
 				if (hashMapBroadcastWithMicroServices.get(b.getClass()) != null) {
 					BlockingQueue<MicroService> microServicesOfBroadcast = hashMapBroadcastWithMicroServices.get(b.getClass());
 					for (MicroService microService : microServicesOfBroadcast) {
-						synchronized (hashMapMicroserviceWithMessage.get(microService)) {
-							BlockingQueue<Message> messageOfThisMicroService = hashMapMicroserviceWithMessage.get(microService);
-							messageOfThisMicroService.add(b);
-							hashMapMicroserviceWithMessage.put(microService, messageOfThisMicroService);
+						BlockingQueue<Message> lock = hashMapMicroserviceWithMessage.get(microService);
+						if(lock!=null) {
+							synchronized (lock) {
+									BlockingQueue<Message> messageOfThisMicroService = hashMapMicroserviceWithMessage.get(microService);
+									messageOfThisMicroService.add(b);
+									hashMapMicroserviceWithMessage.put(microService, messageOfThisMicroService);
+								}
 						}
 					}
-					synchronized (this) {
-						this.notifyAll();
-					}
+//					synchronized (this) {
+//						this.notifyAll();
+//					}
 				}
 			}
-		}
+		//}
 
 	}
 
@@ -218,9 +219,9 @@ public class MessageBusImpl implements MessageBus {
 					}
 				}
 			}
-			synchronized (this) {
-				this.notifyAll();
-			}
+//			synchronized (this) {
+//				this.notifyAll();
+//			}
 		}
 		return ev_future;
 	}
@@ -233,7 +234,8 @@ public class MessageBusImpl implements MessageBus {
 	 */
 	@Override
 	public Message awaitMessage(MicroService m) throws InterruptedException {
-		return hashMapMicroserviceWithMessage.get(m).take();
+		Message awaitOutput = hashMapMicroserviceWithMessage.get(m).take();
+		return awaitOutput;
 	}
 
 	/**
