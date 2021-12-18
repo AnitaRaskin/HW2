@@ -53,19 +53,22 @@ public class Cluster {
 		synchronized (lockCPU) {
 			if (dataFromGPUTabular.size() > 0) {
 				cpu.receiveData(dataFromGPUTabular.poll());
-				System.out.println("CPU take dataBatch from Tabular Cluster 52");
+//				System.out.println("CPU take dataBatch from Tabular Cluster 52");
 			}
 			else if(dataFromGPUText.size() > 0){
 				cpu.receiveData(dataFromGPUText.poll());
-				System.out.println("CPU take dataBatch from Text Cluster 52");
+//				System.out.println("CPU take dataBatch from Text Cluster 52");
 			}
 			else if(dataFromGPUImages.size() > 0){
 				cpu.receiveData(dataFromGPUImages.poll());
-				System.out.println("CPU take dataBatch from Images Cluster 52");
+//				System.out.println("CPU take dataBatch from Images Cluster 52");
 			}
 			else {
 				CPUS.add(cpu);
 			}
+		}
+		synchronized (this) {
+			this.notifyAll();
 		}
 	}
 	public void addGPU(GPU gpu){
@@ -84,7 +87,7 @@ public class Cluster {
 				CPU currentCPU = bestCPU(CPUS,dataBatch);
 				if (currentCPU != null) {
 					currentCPU.receiveData(dataBatch);
-					System.out.println("CPU " + currentCPU + " is free Cluster 68");
+//					System.out.println("CPU " + currentCPU + " is free Cluster 68");
 				}
 				//CPUS.add(currentCPU);
 			} else {// have no CPU to take this data
@@ -96,6 +99,9 @@ public class Cluster {
 					dataFromGPUImages.add(dataBatch);
 //				System.out.println("I have no CPU free Cluster 72");
 			}
+		}
+		synchronized (this) {
+			this.notifyAll();
 		}
 	}
 
@@ -146,7 +152,7 @@ public class Cluster {
 	 * @param dataBatch
 	 */
 	public void sendProcessedData(DataBatch dataBatch){
-		System.out.println("sending data back to GPU");
+//		System.out.println("sending data back to GPU");
 		synchronized (lockReturnDG){
 			Data originOfData = dataBatch.getData();
 			dataBatchSize = dataBatchSize + 1;
@@ -156,10 +162,13 @@ public class Cluster {
 				if(currentGPU.getModel()!=null && currentGPU.getModel().getData()==originOfData){
 					found = true;
 					currentGPU.addProcessedData(dataBatch);
-					System.out.println("VRAM succeed to return Data Cluster142");
+//					System.out.println("VRAM succeed to return Data Cluster142");
 				}
 				GPUS.add(currentGPU);
 			}
+		}
+		synchronized (this) {
+			this.notifyAll();
 		}
 	}
 	public int getDataBatchSize(){

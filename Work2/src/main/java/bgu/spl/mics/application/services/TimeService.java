@@ -46,6 +46,7 @@ public class TimeService extends MicroService{
 		else {
 			tickBroadcast = new TickBroadcast();
 			this.sendBroadcast(tickBroadcast);
+//			System.out.println(currentTime);
 		}
 
 	}

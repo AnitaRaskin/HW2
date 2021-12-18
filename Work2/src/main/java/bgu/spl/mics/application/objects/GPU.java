@@ -77,7 +77,7 @@ public class GPU {
             DataBatch db = new DataBatch(data, i);
             Disk.add(db);
         }
-        System.out.println("number of DataBatches "+Disk.size()+ " GPU-78");
+//        System.out.println("number of DataBatches "+Disk.size()+ " GPU-78");
     }
 
     /**
@@ -113,7 +113,7 @@ public class GPU {
      */
     private void trainBatch(){
         if(VRAM.size() > 0){
-            System.out.println("VRAm>0 GPU114");
+//            System.out.println("VRAm>0 GPU114");
             if(ticks == neededTicks()){
                 System.out.println("have enough ticks");
                 model.getData().addTrainedData();
@@ -123,7 +123,7 @@ public class GPU {
                 memoryLimitation++;
                 DataBatchSize ++;
                 sendDataToPro();
-                System.out.println("I train Data, current Time used: "+runTime+ "GPU121" );
+//                System.out.println("I train Data, current Time used: "+runTime+ "GPU121" );
             }
         }
         else
@@ -174,7 +174,7 @@ public class GPU {
      * @post: @post memoryLimitation = @pre memoryLimitation + processed.memory
      */
     public void addProcessedData(DataBatch dataBatch){
-        System.out.println("Data added to VRAM gpu174");
+//        System.out.println("Data added to VRAM gpu174");
         VRAM.add(dataBatch);
     }
 

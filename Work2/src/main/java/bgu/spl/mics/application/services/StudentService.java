@@ -46,24 +46,24 @@ public class StudentService extends MicroService {
                 if(student.getModelQueue() != null){
                     if(student.getModelQueue().peek().getStatus().equals(Model.Status.PreTrained)) {
                         currentModel = student.getModelQueue().peek();
-                        System.out.println("trying to send Model" + currentModel.getData().getType() + " StudentService 50");
+//                        System.out.println("trying to send Model" + currentModel.getData().getType() + " StudentService 50");
                         future = sendEvent(new TrainModelEvent(currentModel));
                     }
                 }
             }
             else if(future.isDone() && currentModel.getStatus().equals(Model.Status.Trained)){
                 future = sendEvent(new TestModelEvent(currentModel));
-                System.out.println("sent test");
+//                System.out.println("sent test");
 
             }
             else if(future.isDone() && currentModel.getStatus().equals(Model.Status.Tested) && currentModel.getResult().equals(Model.Result.Good)){
                 future = sendEvent(new PublishResultsEvent(currentModel));
                 student.getModelQueue().add(student.getModelQueue().poll());
                 currentModel = null;
-                System.out.println("publish mother FUCKER!!!!!");
+//                System.out.println("publish mother FUCKER!!!!!");
             }
             else if(future.isDone() && currentModel.getStatus().equals(Model.Status.Tested) && currentModel.getResult().equals(Model.Result.Bad)){
-                System.out.println("the model is not finished");
+//                System.out.println("the model is not finished");
                 student.getModelQueue().add(student.getModelQueue().poll());
                 currentModel = null;
             }

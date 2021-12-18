@@ -182,8 +182,8 @@ public class CRMSRunner {
 
         print.println("    \"cpuTimeUsed\": " + cpuTime + ",");
         print.println("    \"gpuTimeUsed\": " + gpuTime + ",");
-        print.println("    \"batchesProcessed by gpu\": " +sum);
-        print.println("    \"batchesProcessed by cpu\": " +cluster.getDataBatchSize() );
+        //print.println("    \"batchesProcessed by gpu\": " +sum);
+        print.println("    \"batchesProcessed\": " +cluster.getDataBatchSize() );
         print.println("}");
         print.close();
 

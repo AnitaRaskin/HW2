@@ -185,9 +185,9 @@ public class MessageBusImpl implements MessageBus {
 								}
 						}
 					}
-//					synchronized (this) {
-//						this.notifyAll();
-//					}
+					synchronized (this) {
+						this.notifyAll();
+					}
 				}
 			}
 		//}
@@ -219,9 +219,9 @@ public class MessageBusImpl implements MessageBus {
 					}
 				}
 			}
-//			synchronized (this) {
-//				this.notifyAll();
-//			}
+			synchronized (this) {
+				this.notifyAll();
+			}
 		}
 		return ev_future;
 	}
