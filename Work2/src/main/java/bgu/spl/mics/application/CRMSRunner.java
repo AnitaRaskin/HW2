@@ -169,21 +169,23 @@ public class CRMSRunner {
         }//end of conf
         print.println("    ],");
         //Help function
-        int cpuTime=0,gpuTime = 0;
+        int cpuTime=0,gpuTime = 0, processedDataB = 0;
         for(CPU cpu:CPUS){
             cpuTime = cpuTime + cpu.getRunTime();
+            processedDataB += cpu.getDataBatchProcess();
         }
         int sum=0;
         for(GPU gpu:GPUS){
             gpuTime = gpuTime + gpu.getRunTime();
-            sum = sum + gpu.getDataBatchSize();
+//            sum = sum + gpu.getDataBatchSize();
         }
 
 
         print.println("    \"cpuTimeUsed\": " + cpuTime + ",");
         print.println("    \"gpuTimeUsed\": " + gpuTime + ",");
         //print.println("    \"batchesProcessed by gpu\": " +sum);
-        print.println("    \"batchesProcessed\": " +cluster.getDataBatchSize() );
+//        print.println("    \"batchesProcessed\": " +cluster.getDataBatchSize() );
+        print.println("    \"batchesProcessed\": " +processedDataB);
         print.println("}");
         print.close();
 

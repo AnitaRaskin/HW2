@@ -57,6 +57,7 @@ public class GPUService extends MicroService {
     }
     @Override
     protected void initialize() {
+//        System.out.println(getClass()+"was initialize");
         subscribeBroadcast(TerminateBroadcast.class, (TerminateBroadcast terminated)->terminate());
         /**
          * check if the gpu is in the middle of training model

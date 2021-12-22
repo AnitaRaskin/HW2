@@ -97,6 +97,8 @@ public class GPU {
      *      *        @post size() = @pre size() - 1
      */
     public void sendDataToPro(){
+        //System.out.println(type);
+        //System.out.println(model.getData().getSize());
         while(Disk.size() > 0 && memoryLimitation > 0){//able to train dataBatch
             DataBatch db = Disk.remove();
             memoryLimitation--;
@@ -115,7 +117,7 @@ public class GPU {
         if(VRAM.size() > 0){
 //            System.out.println("VRAm>0 GPU114");
             if(ticks == neededTicks()){
-                System.out.println("have enough ticks");
+                //System.out.println("have enough ticks");
                 model.getData().addTrainedData();
                 VRAM.poll();
                 runTime += ticks;

@@ -67,9 +67,9 @@ public class Cluster {
 				CPUS.add(cpu);
 			}
 		}
-		synchronized (this) {
-			this.notifyAll();
-		}
+//		synchronized (this) {
+//			this.notifyAll();
+//		}
 	}
 	public void addGPU(GPU gpu){
 		GPUS.add(gpu);
@@ -100,9 +100,9 @@ public class Cluster {
 //				System.out.println("I have no CPU free Cluster 72");
 			}
 		}
-		synchronized (this) {
-			this.notifyAll();
-		}
+//		synchronized (this) {
+//			this.notifyAll();
+//		}
 	}
 
 	/**
@@ -152,10 +152,11 @@ public class Cluster {
 	 * @param dataBatch
 	 */
 	public void sendProcessedData(DataBatch dataBatch){
+		dataBatchSize = dataBatchSize + 1;
 //		System.out.println("sending data back to GPU");
 		synchronized (lockReturnDG){
 			Data originOfData = dataBatch.getData();
-			dataBatchSize = dataBatchSize + 1;
+			//System.out.println(dataBatchSize);
 			boolean found = false;
 			for(int i=0; i< GPUS.size() && !found; i++){
 				GPU currentGPU = GPUS.poll();

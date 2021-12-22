@@ -146,7 +146,7 @@ public class MessageBusImpl implements MessageBus {
 			m.terminate();
 			//remove from all the hash maps
 			//microservice
-			synchronized (this) {
+			synchronized (hashMapMicroserviceWithMessage) {
 				hashMapMicroserviceWithMessage.remove(m);
 				//events
 				for(BlockingQueue block:hashMapEventWithMicroServices.values()){
@@ -185,9 +185,9 @@ public class MessageBusImpl implements MessageBus {
 								}
 						}
 					}
-					synchronized (this) {
-						this.notifyAll();
-					}
+//					synchronized (this) {
+//						this.notifyAll();
+//					}
 				}
 			}
 		//}
@@ -219,9 +219,9 @@ public class MessageBusImpl implements MessageBus {
 					}
 				}
 			}
-			synchronized (this) {
-				this.notifyAll();
-			}
+//			synchronized (this) {
+//				this.notifyAll();
+//			}
 		}
 		return ev_future;
 	}
@@ -319,7 +319,17 @@ public class MessageBusImpl implements MessageBus {
 	 * @return Boolean - true, false
 	 */
 	public boolean hasAwaitMassage(MicroService m){
-		return  true;
+		BlockingQueue<Message> messagesOfM = hashMapMicroserviceWithMessage.get(m);
+		messagesOfM.add(new TickBroadcast());
+		hashMapMicroserviceWithMessage.put(m, messagesOfM);
+		Message message = null;
+		try {
+			message = awaitMessage(m);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return (message != null);
+
 	}
 
 }

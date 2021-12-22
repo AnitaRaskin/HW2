@@ -40,6 +40,7 @@ public class TimeService extends MicroService{
 		currentTime++;
 		Broadcast tickBroadcast;
 		if(currentTime == duration) {
+//			System.out.print(".");//Send Termination Broadcast
 			sendBroadcast(new TerminateBroadcast());
 			timer.cancel();
 		}
@@ -47,6 +48,7 @@ public class TimeService extends MicroService{
 			tickBroadcast = new TickBroadcast();
 			this.sendBroadcast(tickBroadcast);
 //			System.out.println(currentTime);
+//			System.out.print("");
 		}
 
 	}

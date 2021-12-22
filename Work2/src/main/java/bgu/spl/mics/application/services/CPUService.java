@@ -21,6 +21,7 @@ public class CPUService extends MicroService {
 
     @Override
     protected void initialize() {
+//        System.out.println(getClass()+"was initialize");
         subscribeBroadcast(TerminateBroadcast.class, (terminate) -> {
             this.terminate();});
 
